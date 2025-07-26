@@ -1,140 +1,124 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, random } from 'remotion';
-import { Circle } from '@remotion/shapes';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } from 'remotion';
 
 const Scene5: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const mainText = "Start Creating Stunning Stories Today";
-  const buttonText = "Get Started Free";
+  const mainText = "Join the Elite Dating Experience";
+  const buttonText = "Download Now";
 
-  // Neon glow pulse
-  const glowIntensity = interpolate((frame % 60), [0, 30, 60], [0.5, 1.5, 0.5]);
+  // Liquid morphing background
+  const morphOffset1 = interpolate(frame, [0, 180], [0, Math.PI * 2]);
+  const morphOffset2 = interpolate(frame, [0, 240], [0, Math.PI * 3]);
   
-  // Main text animation
+  const createLiquidPath = (offset: number, amplitude: number) => {
+    const points = [];
+    for (let i = 0; i <= 100; i++) {
+      const x = (i / 100) * width;
+      const y = height / 2 + Math.sin((i / 100) * 8 + offset) * amplitude + 
+                Math.sin((i / 100) * 12 + offset * 1.5) * (amplitude * 0.5);
+      points.push(`${x},${y}`);
+    }
+    return points.join(' ');
+  };
+
   const textScale = spring({
     fps,
     frame,
-    config: { damping: 300, stiffness: 400 }
+    config: { damping: 200, stiffness: 300 }
   });
 
-  // Button hover effect simulation
-  const buttonScale = interpolate(
-    Math.sin(frame * 0.1) + 1,
-    [0, 2],
-    [1, 1.05]
+  const buttonMorph = interpolate(
+    Math.sin(frame * 0.08),
+    [-1, 1],
+    [0.95, 1.05]
   );
-
-  // Floating particles
-  const particles = Array.from({ length: 30 }, (_, i) => {
-    const x = random(`particle-x-${i}`) * width;
-    const baseY = random(`particle-y-${i}`) * height;
-    const floatY = baseY + Math.sin((frame + i * 10) * 0.05) * 20;
-    const opacity = interpolate((frame + i * 5) % 180, [0, 90, 180], [0.1, 0.4, 0.1]);
-    
-    return { x, y: floatY, opacity, size: 2 + random(`particle-size-${i}`) * 3 };
-  });
 
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at center, #0a0a0a 0%, #1a0033 50%, #000000 100%)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 60
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      overflow: 'hidden'
     }}>
-      {/* Animated particles */}
-      {particles.map((particle, i) => (
-        <Circle
-          key={i}
-          x={particle.x}
-          y={particle.y}
-          width={particle.size}
-          height={particle.size}
-          color="#FF00FF"
-          opacity={particle.opacity}
+      {/* Liquid morphing background */}
+      <svg width={width} height={height} style={{ position: 'absolute' }}>
+        <defs>
+          <filter id="gooey">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="10" />
+            <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" />
+            <feComposite in2="SourceGraphic" operator="atop" />
+          </filter>
+        </defs>
+        
+        <path
+          d={`M 0,${height} Q ${createLiquidPath(morphOffset1, 100)} ${width},${height} L ${width},${height} L 0,${height} Z`}
+          fill="rgba(255,255,255,0.1)"
+          filter="url(#gooey)"
         />
-      ))}
+        
+        <path
+          d={`M 0,0 Q ${createLiquidPath(morphOffset2, 80)} ${width},0 L ${width},0 L 0,0 Z`}
+          fill="rgba(255,255,255,0.05)"
+          filter="url(#gooey)"
+        />
+      </svg>
       
-      {/* Main text with neon effect */}
+      {/* Content */}
       <div style={{
-        transform: `scale(${textScale})`,
-        fontSize: 72,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        textAlign: 'center',
-        maxWidth: '80%',
-        textShadow: `
-          0 0 ${10 * glowIntensity}px #FF00FF,
-          0 0 ${20 * glowIntensity}px #FF00FF,
-          0 0 ${30 * glowIntensity}px #FF00FF,
-          0 0 ${40 * glowIntensity}px #FF00FF
-        `,
-        filter: `brightness(${1 + glowIntensity * 0.2})`
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        gap: 50,
+        zIndex: 10
       }}>
-        "Start Creating Stunning Stories Today"
-      </div>
-      
-      {/* Neon button */}
-      <div style={{
-        opacity: interpolate(frame, [30, 60], [0, 1], { extrapolateRight: 'clamp' }),
-        transform: `scale(${buttonScale})`,
-        background: 'transparent',
-        border: `3px solid #00FFFF`,
-        color: '#00FFFF',
-        fontSize: 28,
-        fontWeight: 'bold',
-        padding: '20px 50px',
-        borderRadius: 0,
-        position: 'relative',
-        boxShadow: `
-          inset 0 0 ${20 * glowIntensity}px rgba(0,255,255,0.2),
-          0 0 ${20 * glowIntensity}px #00FFFF,
-          0 0 ${40 * glowIntensity}px #00FFFF
-        `,
-        textShadow: `0 0 ${10 * glowIntensity}px #00FFFF`,
-        backdropFilter: 'blur(5px)'
-      }}>
-        {/* Button background glow */}
+        {/* Morphing text */}
         <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `linear-gradient(45deg, transparent, rgba(0,255,255,${0.1 * glowIntensity}), transparent)`,
-          animation: 'none'
-        }} />
-        <span style={{ position: 'relative', zIndex: 1 }}>"Get Started Free"</span>
+          transform: `scale(${textScale}) perspective(1000px) rotateX(${Math.sin(frame * 0.02) * 5}deg)`,
+          fontSize: 64,
+          fontWeight: 'bold',
+          color: 'white',
+          textAlign: 'center',
+          maxWidth: '80%',
+          textShadow: '0 10px 30px rgba(0,0,0,0.3)',
+          filter: `blur(${Math.max(0, 2 - frame / 10)}px)`
+        }}>
+          "Join the Elite Dating Experience"
+        </div>
+        
+        {/* Liquid button */}
+        <div style={{
+          opacity: interpolate(frame, [40, 70], [0, 1], { extrapolateRight: 'clamp' }),
+          transform: `scale(${buttonMorph}) perspective(1000px) rotateX(${Math.sin(frame * 0.03) * 3}deg)`,
+          background: 'rgba(255,255,255,0.95)',
+          color: '#764ba2',
+          fontSize: 24,
+          fontWeight: 'bold',
+          padding: '25px 60px',
+          borderRadius: `${30 + Math.sin(frame * 0.1) * 10}px`,
+          border: 'none',
+          boxShadow: `
+            0 15px 35px rgba(0,0,0,0.2),
+            inset 0 0 20px rgba(255,255,255,0.1)
+          `,
+          backdropFilter: 'blur(10px)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Button liquid effect */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: `${interpolate(frame, [70, 170], [-100, 100])}%`,
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+            transform: 'skewX(-15deg)'
+          }} />
+          <span style={{ position: 'relative', zIndex: 1 }}>"Download Now"</span>
+        </div>
       </div>
-      
-      {/* Corner effects */}
-      <div style={{
-        position: 'absolute',
-        top: 50,
-        left: 50,
-        width: 100,
-        height: 100,
-        border: '2px solid #FF00FF',
-        borderBottom: 'none',
-        borderRight: 'none',
-        opacity: 0.6,
-        boxShadow: `0 0 ${15 * glowIntensity}px #FF00FF`
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: 50,
-        right: 50,
-        width: 100,
-        height: 100,
-        border: '2px solid #00FFFF',
-        borderTop: 'none',
-        borderLeft: 'none',
-        opacity: 0.6,
-        boxShadow: `0 0 ${15 * glowIntensity}px #00FFFF`
-      }} />
     </AbsoluteFill>
   );
 };

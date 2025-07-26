@@ -981,7 +981,7 @@ const {SCENE_NAME}: React.FC = () => {
 
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at center, #2C3E50 0%, #4A6741 30%, #1A1A1A 100%)',
+      background: 'radial-gradient(ellipse at center, #0F172A 0%, #1E293B 50%, #334155 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center'
@@ -1015,12 +1015,13 @@ const {SCENE_NAME}: React.FC = () => {
         }}>
           {/* Product icon/logo */}
           <div style={{
-            fontSize: 80,
+            fontSize: 48,
             color: '#64C8FF',
             textShadow: \`0 0 20px #64C8FF\`,
-            transform: \`rotateY(\${-rotationY}deg)\` // Counter-rotate to keep icon upright
+            fontWeight: 'bold',
+            letterSpacing: '2px'
           }}>
-            📱
+            {productName.split(' ')[0].toUpperCase()}
           </div>
         </div>
         
@@ -1077,7 +1078,7 @@ const {SCENE_NAME}: React.FC = () => {
               transform: \`scale(\${index === highlightFeature ? 1.1 : 1})\`,
               transition: 'transform 0.3s ease',
               fontSize: 18,
-              color: index === highlightFeature ? '#64C8FF' : '#FFFFFF',
+              color: index === highlightFeature ? '#60A5FA' : '#E2E8F0',
               textShadow: index === highlightFeature ? '0 0 10px #64C8FF' : 'none',
               fontWeight: index === highlightFeature ? 'bold' : 'normal'
             }}
@@ -1093,9 +1094,179 @@ const {SCENE_NAME}: React.FC = () => {
 export { {SCENE_NAME} };`
   },
   {
-    id: 'stats-counter-dynamic',
-    name: 'Dynamic Stats Counter',
-    description: 'Animated statistics with dynamic counters and progress bars',
+    id: 'stats-chart-animated',
+    name: 'Animated Chart Visualization',
+    description: 'Professional animated bar chart with data visualization',
+    category: 'stats',
+    complexity: 'complex',
+    visualStyle: 'modern',
+    requiredProps: ['stats'],
+    code: `import React from 'react';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } from 'remotion';
+
+const {SCENE_NAME}: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
+
+  const stats = {stats} || [
+    { label: 'Jan', value: 50 },
+    { label: 'Feb', value: 80 },
+    { label: 'Mar', value: 30 },
+    { label: 'Apr', value: 70 },
+    { label: 'May', value: 90 }
+  ];
+
+  const colors = [
+    '#4361ee', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0',
+    '#4895ef', '#560bad', '#b5179e', '#f15bb5', '#00b4d8'
+  ];
+
+  const chartWidth = 900;
+  const chartHeight = 500;
+  const padding = 60;
+
+  const xScale = (x) => (x / (stats.length - 1)) * (chartWidth - padding * 2) + padding;
+  const yScale = (y) => chartHeight - padding - (y / 100) * (chartHeight - padding * 2);
+  const barWidth = ((chartWidth - padding * 2) / stats.length) * 0.7;
+
+  const titleOpacity = interpolate(frame, [0, 30], [0, 1], { extrapolateRight: 'clamp' });
+
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(to bottom right, #111827, #1f2937)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'Inter, system-ui, sans-serif'
+    }}>
+      <div style={{
+        position: 'relative',
+        width: chartWidth,
+        height: chartHeight,
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        borderRadius: 16,
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+        overflow: 'hidden',
+        padding: 20
+      }}>
+        <svg width={chartWidth} height={chartHeight}>
+          <defs>
+            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" floodOpacity="0.3" />
+            </filter>
+          </defs>
+          
+          {/* X-axis line */}
+          <line
+            x1={padding}
+            y1={chartHeight - padding}
+            x2={chartWidth - padding}
+            y2={chartHeight - padding}
+            stroke="rgba(255, 255, 255, 0.2)"
+            strokeWidth="2"
+          />
+
+          {/* X-axis labels */}
+          {stats.map((point, i) => (
+            <text
+              key={\`x-label-\${i}\`}
+              x={xScale(i)}
+              y={chartHeight - padding + 25}
+              textAnchor="middle"
+              fill="rgba(255, 255, 255, 0.8)"
+              fontSize="14"
+              fontWeight="500"
+            >
+              {point.label}
+            </text>
+          ))}
+
+          {/* Animated bars */}
+          {stats.map((point, i) => {
+            const numericValue = typeof point.value === 'string' 
+              ? parseFloat(point.value.replace(/[^0-9.]/g, '')) || 50
+              : point.value;
+              
+            const barHeight = (numericValue / 100) * (chartHeight - padding * 2);
+            
+            const barProgress = interpolate(
+              frame,
+              [i * 5, 20 + i * 5],
+              [0, 1],
+              { extrapolateRight: 'clamp' }
+            );
+
+            const currentHeight = barHeight * barProgress;
+            const currentY = chartHeight - padding - currentHeight;
+
+            return (
+              <g key={\`bar-\${i}\`}>
+                <rect
+                  x={xScale(i) - barWidth / 2}
+                  y={currentY}
+                  width={barWidth}
+                  height={currentHeight}
+                  fill={colors[i % colors.length]}
+                  rx="6"
+                  ry="6"
+                  filter="url(#shadow)"
+                />
+                <text
+                  x={xScale(i)}
+                  y={currentY - 10}
+                  textAnchor="middle"
+                  fill="white"
+                  fontSize="14"
+                  fontWeight="bold"
+                  opacity={barProgress > 0.9 ? 1 : 0}
+                >
+                  {typeof point.value === 'string' ? point.value : numericValue}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Chart title */}
+        <div style={{
+          position: 'absolute',
+          top: 25,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: 28,
+          fontWeight: 'bold',
+          color: 'white',
+          textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+          letterSpacing: '-0.5px',
+          opacity: titleOpacity
+        }}>
+          Performance Analytics
+        </div>
+
+        {/* Chart subtitle */}
+        <div style={{
+          position: 'absolute',
+          top: 60,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: 16,
+          color: 'rgba(255, 255, 255, 0.7)',
+          textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+          opacity: titleOpacity
+        }}>
+          Data visualization dashboard
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+export { {SCENE_NAME} };`
+  },
+  {
+    id: 'stats-circular-progress',
+    name: 'Circular Progress Indicators',
+    description: 'Modern circular progress rings with animated counters',
     category: 'stats',
     complexity: 'medium',
     visualStyle: 'modern',
@@ -1107,28 +1278,29 @@ const {SCENE_NAME}: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const stats = {stats} || [
-    { label: 'Users', value: 50000, suffix: '+', color: '#FF6B6B' },
-    { label: 'Downloads', value: 100000, suffix: '+', color: '#4ECDC4' },
-    { label: 'Rating', value: 4.9, suffix: '/5', color: '#FFE66D' }
+  const rawStats = {stats} || [
+    { label: 'Success Rate', value: 85, suffix: '%', color: '#4361ee' },
+    { label: 'Users', value: 12000, suffix: '+', color: '#f72585' },
+    { label: 'Rating', value: 4.8, suffix: '/5', color: '#4cc9f0' }
   ];
-
-  const containerScale = spring({
-    fps,
-    frame,
-    config: { damping: 200, stiffness: 200 }
-  });
+  
+  // Ensure all stats have colors
+  const stats = rawStats.map((stat, index) => ({
+    ...stat,
+    color: stat.color || ['#4361ee', '#f72585', '#4cc9f0', '#4895ef', '#560bad'][index % 5],
+    suffix: stat.suffix || ''
+  }));
 
   return (
     <AbsoluteFill style={{
-      background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 80
+      gap: 100
     }}>
       {stats.map((stat, index) => {
-        const startFrame = index * 30;
+        const startFrame = index * 20;
         const progress = interpolate(
           frame - startFrame,
           [0, 90],
@@ -1136,92 +1308,591 @@ const {SCENE_NAME}: React.FC = () => {
           { extrapolateRight: 'clamp' }
         );
         
-        const countValue = interpolate(
-          progress,
-          [0, 1],
-          [0, stat.value],
-          { extrapolateRight: 'clamp' }
-        );
+        const numericValue = typeof stat.value === 'string' 
+          ? parseFloat(stat.value.replace(/[^0-9.]/g, '')) || 80
+          : stat.value;
+          
+        const progressPercent = Math.min(numericValue, 100);
+        const radius = 80;
+        const circumference = 2 * Math.PI * radius;
+        const strokeDashoffset = circumference - (progressPercent / 100) * circumference * progress;
         
-        const scaleEffect = spring({
-          fps,
-          frame: frame - startFrame,
-          config: { damping: 200, stiffness: 300 }
-        });
+        const pulse = 1 + Math.sin(frame / 15) * 0.03;
         
-        const displayValue = stat.value < 10 
-          ? countValue.toFixed(1)
-          : Math.floor(countValue).toLocaleString();
+        const displayValue = typeof stat.value === 'string'
+          ? stat.value
+          : (numericValue < 10 
+            ? (numericValue * progress).toFixed(1)
+            : Math.floor(numericValue * progress).toLocaleString());
 
         return (
           <div
             key={index}
             style={{
-              transform: \`scale(\${scaleEffect})\`,
-              opacity: interpolate(frame - startFrame, [0, 20], [0, 1]),
+              position: 'relative',
+              width: 250,
+              height: 250,
+              transform: \`scale(\${pulse})\`,
+              opacity: interpolate(frame - startFrame, [0, 20], [0, 1])
+            }}
+          >
+            {/* Background circle */}
+            <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 200 200"
+              style={{
+                position: 'absolute',
+                transform: 'rotate(-90deg)'
+              }}
+            >
+              <circle
+                cx="100"
+                cy="100"
+                r={radius}
+                fill="none"
+                stroke="rgba(30, 41, 59, 0.2)"
+                strokeWidth="12"
+              />
+            </svg>
+            
+            {/* Progress circle */}
+            <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 200 200"
+              style={{
+                position: 'absolute',
+                transform: 'rotate(-90deg)'
+              }}
+            >
+              <circle
+                cx="100"
+                cy="100"
+                r={radius}
+                fill="none"
+                stroke={stat.color || '#4361ee'}
+                strokeWidth="12"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                style={{
+                  filter: \`drop-shadow(0 0 10px \${stat.color || '#4361ee'})\`
+                }}
+              />
+            </svg>
+            
+            {/* Value display */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: 36,
+                fontWeight: 'bold',
+                color: '#1e293b',
+                marginBottom: 8
+              }}>
+                {displayValue}{stat.suffix || ''}
+              </div>
+              <div style={{
+                fontSize: 18,
+                color: '#475569',
+                fontWeight: '500'
+              }}>
+                {stat.label}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
+export { {SCENE_NAME} };`
+  },
+  {
+    id: 'hero-bubble-text',
+    name: 'Bubble Pop Text Animation',
+    description: 'Letters appear in animated bubbles with spring physics',
+    category: 'hero',
+    complexity: 'complex',
+    visualStyle: 'modern',
+    requiredProps: ['title'],
+    code: `import React from 'react';
+import { useCurrentFrame, useVideoConfig, spring, AbsoluteFill } from 'remotion';
+
+const {SCENE_NAME}: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const title = {title} || 'HELLO';
+  const text = title.toUpperCase();
+
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <div style={{
+        display: 'flex',
+        gap: 20,
+        flexWrap: 'wrap',
+        justifyContent: 'center'
+      }}>
+        {text.split('').map((char, i) => {
+          const delay = i * 8;
+          const scale = spring({
+            frame: frame - delay,
+            fps,
+            from: 0,
+            to: 1,
+            config: {
+              damping: 8,
+              mass: 0.3,
+              stiffness: 100
+            }
+          });
+
+          const colors = ['#1e3a8a', '#3b82f6', '#60a5fa', '#93c5fd', '#1e40af'];
+          const charColor = colors[i % colors.length];
+
+          return (
+            <div
+              key={i}
+              style={{
+                display: 'inline-block',
+                transform: \`scale(\${scale})\`,
+                fontSize: 80,
+                fontWeight: 'bold',
+                color: 'white',
+                border: '6px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '50%',
+                width: 120,
+                height: 120,
+                lineHeight: '108px',
+                textAlign: 'center',
+                background: \`linear-gradient(45deg, \${charColor}, \${charColor}dd)\`,
+                boxShadow: \`0 8px 25px rgba(59, 130, 246, 0.4), inset 0 0 20px rgba(255,255,255,0.1)\`,
+                backdropFilter: 'blur(8px)'
+              }}
+            >
+              {char === ' ' ? '' : char}
+            </div>
+          );
+        })}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+export { {SCENE_NAME} };`
+  },
+  {
+    id: 'hero-typewriter',
+    name: 'Typewriter Animation',
+    description: 'Classic typewriter effect with animated cursor',
+    category: 'hero',
+    complexity: 'medium',
+    visualStyle: 'retro',
+    requiredProps: ['title'],
+    code: `import React from 'react';
+import { useCurrentFrame, interpolate, AbsoluteFill } from 'remotion';
+
+const {SCENE_NAME}: React.FC = () => {
+  const frame = useCurrentFrame();
+  
+  const title = {title} || 'Amazing Product Launch';
+  const text = title;
+  
+  const visibleCharacters = Math.floor(
+    interpolate(frame, [0, 90], [0, text.length], {
+      extrapolateRight: 'clamp'
+    })
+  );
+
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 60
+    }}>
+      <div style={{
+        width: '100%',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          fontFamily: 'Courier New, monospace',
+          fontSize: 64,
+          fontWeight: 'bold',
+          color: 'white',
+          lineHeight: 1.2,
+          textShadow: '0 0 20px rgba(255,255,255,0.3)'
+        }}>
+          {text
+            .slice(0, visibleCharacters)
+            .split('')
+            .map((char, index) => (
+              <span key={index}>
+                {char === ' ' ? ' ' : char}
+              </span>
+            ))}
+          <span style={{
+            fontSize: 64,
+            color: '#60a5fa',
+            opacity: frame % 20 < 10 ? 1 : 0,
+            marginLeft: 8
+          }}>
+            ▌
+          </span>
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+export { {SCENE_NAME} };`
+  },
+  {
+    id: 'features-animated-list',
+    name: 'Animated Feature List',
+    description: 'Features slide in with colorful icons and smooth animations',
+    category: 'features',
+    complexity: 'medium',
+    visualStyle: 'modern',
+    requiredProps: ['features'],
+    code: `import React from 'react';
+import { useCurrentFrame, useVideoConfig, spring, AbsoluteFill } from 'remotion';
+
+const {SCENE_NAME}: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const features = {features} || [
+    { title: 'Feature One', emoji: '🚀', color: '#3b82f6' },
+    { title: 'Feature Two', emoji: '⭐', color: '#60a5fa' },
+    { title: 'Feature Three', emoji: '⚡', color: '#93c5fd' }
+  ];
+
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 60,
+      gap: 40
+    }}>
+      {features.map((item, i) => {
+        const delay = i * 15;
+
+        const slideX = spring({
+          frame: frame - delay,
+          fps,
+          from: -200,
+          to: 0,
+          config: {
+            damping: 12,
+            mass: 0.5
+          }
+        });
+
+        const opacity = spring({
+          frame: frame - delay,
+          fps,
+          from: 0,
+          to: 1,
+          config: {
+            damping: 12,
+            mass: 0.5
+          }
+        });
+
+        const scale = spring({
+          frame: frame - delay,
+          fps,
+          from: 0.3,
+          to: 1,
+          config: {
+            damping: 12,
+            mass: 0.5
+          }
+        });
+
+        return (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 30,
+              width: '100%',
+              maxWidth: 800,
+              transform: \`translateX(\${slideX}px) scale(\${scale})\`,
+              opacity
+            }}
+          >
+            <div style={{
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              backgroundColor: item.color || '#3b82f6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: \`0 8px 20px \${item.color || '#3b82f6'}40\`,
+              fontSize: 40
+            }}>
+              {item.emoji || '✨'}
+            </div>
+            <div style={{
+              color: 'white',
+              fontSize: 48,
+              fontWeight: '600'
+            }}>
+              {item.title}
+            </div>
+          </div>
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
+export { {SCENE_NAME} };`
+  },
+  {
+    id: 'background-liquid-wave',
+    name: 'Liquid Wave Background',
+    description: 'Flowing liquid wave animation with gradient colors',
+    category: 'transition',
+    complexity: 'complex',
+    visualStyle: 'organic',
+    requiredProps: [],
+    code: `import React from 'react';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill } from 'remotion';
+
+const {SCENE_NAME}: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { width, height } = useVideoConfig();
+
+  const numberOfPoints = 50;
+  const points = Array.from({ length: numberOfPoints + 1 }).map((_, i) => {
+    const x = (i / numberOfPoints) * width;
+    const waveHeight = Math.sin(frame / 20 + i / 5) * 80;
+    const y = height / 2 + waveHeight;
+    return \`\${x},\${y}\`;
+  });
+
+  const points2 = Array.from({ length: numberOfPoints + 1 }).map((_, i) => {
+    const x = (i / numberOfPoints) * width;
+    const waveHeight = Math.sin(frame / 25 + i / 3 + Math.PI / 4) * 60;
+    const y = height / 2 + 100 + waveHeight;
+    return \`\${x},\${y}\`;
+  });
+
+  return (
+    <AbsoluteFill>
+      <svg width={width} height={height} style={{ background: '#111827' }}>
+        <defs>
+          <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#1e3a8a" />
+            <stop offset="100%" stopColor="#3b82f6" />
+          </linearGradient>
+          <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#7c3aed" />
+            <stop offset="100%" stopColor="#a855f7" />
+          </linearGradient>
+        </defs>
+        
+        <path
+          d={\`M 0,\${height} \${points.join(' ')} \${width},\${height} Z\`}
+          fill="url(#gradient1)"
+          opacity="0.8"
+        />
+        
+        <path
+          d={\`M 0,\${height} \${points2.join(' ')} \${width},\${height} Z\`}
+          fill="url(#gradient2)"
+          opacity="0.6"
+        />
+      </svg>
+    </AbsoluteFill>
+  );
+};
+
+export { {SCENE_NAME} };`
+  },
+  {
+    id: 'hero-retro-neon',
+    name: 'Retro Neon Title',
+    description: 'Synthwave-style neon text with retro grid background',
+    category: 'hero',
+    complexity: 'complex',
+    visualStyle: 'retro',
+    requiredProps: ['title', 'subtitle'],
+    code: `import React from 'react';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } from 'remotion';
+
+const {SCENE_NAME}: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
+
+  const title = {title};
+  const subtitle = {subtitle};
+
+  const glowIntensity = interpolate((frame % 120), [0, 60, 120], [0.5, 2, 0.5]);
+  
+  const textScale = spring({
+    fps,
+    frame,
+    config: { damping: 200, stiffness: 300 }
+  });
+
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(180deg, #0a0a0a 0%, #1a0033 50%, #330066 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 30
+    }}>
+      {/* Main title with neon effect */}
+      <div style={{
+        transform: \`scale(\${textScale})\`,
+        fontSize: 84,
+        fontWeight: 'bold',
+        fontFamily: 'monospace',
+        color: '#FFFFFF',
+        textAlign: 'center',
+        textShadow: \`
+          0 0 \${5 * glowIntensity}px #FF00FF,
+          0 0 \${10 * glowIntensity}px #FF00FF,
+          0 0 \${15 * glowIntensity}px #FF00FF,
+          0 0 \${20 * glowIntensity}px #FF00FF
+        \`,
+        letterSpacing: '3px'
+      }}>
+        {title}
+      </div>
+      
+      {subtitle && (
+        <div style={{
+          fontSize: 24,
+          color: '#00FFFF',
+          textAlign: 'center',
+          opacity: interpolate(frame, [30, 60], [0, 1]),
+          textShadow: \`0 0 \${10 * glowIntensity}px #00FFFF\`,
+          fontFamily: 'monospace',
+          letterSpacing: '2px'
+        }}>
+          {subtitle}
+        </div>
+      )}
+    </AbsoluteFill>
+  );
+};
+
+export { {SCENE_NAME} };`
+  },
+  {
+    id: 'features-holographic-cards',
+    name: 'Holographic Feature Cards',
+    description: 'Futuristic holographic cards with prismatic effects',
+    category: 'features',
+    complexity: 'complex',
+    visualStyle: 'futuristic',
+    requiredProps: ['features'],
+    code: `import React from 'react';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } from 'remotion';
+
+const {SCENE_NAME}: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const features = {features} || [
+    { title: 'Neural Networks', description: 'AI-powered processing', emoji: '🧠', color: '#64C8FF' },
+    { title: 'Quantum Speed', description: 'Instant calculations', emoji: '⚡', color: '#FF6B9D' },
+    { title: 'Holographic UI', description: 'Next-gen interface', emoji: '🔮', color: '#9B59B6' }
+  ];
+
+  return (
+    <AbsoluteFill style={{
+      background: 'radial-gradient(ellipse at center, #0D1421 0%, #1A1A2E 50%, #16213E 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 60,
+      padding: 80
+    }}>
+      {features.map((feature, index) => {
+        const delay = index * 20;
+        const cardScale = spring({
+          fps,
+          frame: frame - delay,
+          config: { damping: 200, stiffness: 150 }
+        });
+        
+        const prismEffect = Math.sin((frame + index * 50) * 0.05) * 5;
+        
+        return (
+          <div
+            key={index}
+            style={{
+              transform: \`scale(\${cardScale}) translateY(\${prismEffect}px)\`,
+              opacity: interpolate(frame - delay, [0, 30], [0, 1]),
+              width: 280,
+              height: 350,
+              position: 'relative',
+              borderRadius: 20,
+              background: 'linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(100,200,255,0.2) 50%, rgba(255,255,255,0.05) 100%)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 0 30px rgba(100,200,255,0.3), inset 0 0 50px rgba(255,255,255,0.1)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: 20
+              justifyContent: 'center',
+              gap: 20,
+              padding: 30
             }}
           >
-            {/* Progress ring */}
             <div style={{
-              position: 'relative',
-              width: 120,
-              height: 120
+              fontSize: 48,
+              marginBottom: 10,
+              filter: 'drop-shadow(0 0 10px #64C8FF)'
             }}>
-              <svg width={120} height={120} style={{ transform: 'rotate(-90deg)' }}>
-                <circle
-                  cx={60}
-                  cy={60}
-                  r={50}
-                  fill="none"
-                  stroke="rgba(255,255,255,0.2)"
-                  strokeWidth={8}
-                />
-                <circle
-                  cx={60}
-                  cy={60}
-                  r={50}
-                  fill="none"
-                  stroke={stat.color}
-                  strokeWidth={8}
-                  strokeDasharray={\`\${314 * progress} 314\`}
-                  strokeLinecap="round"
-                  style={{
-                    filter: \`drop-shadow(0 0 10px \${stat.color})\`
-                  }}
-                />
-              </svg>
-              
-              {/* Counter display */}
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center'
-              }}>
-                <div style={{
-                  fontSize: 24,
-                  fontWeight: 'bold',
-                  color: stat.color,
-                  textShadow: \`0 0 10px \${stat.color}\`
-                }}>
-                  {displayValue}{stat.suffix}
-                </div>
-              </div>
+              {feature.emoji || '⭐'}
             </div>
             
-            {/* Label */}
             <div style={{
-              fontSize: 22,
-              color: 'white',
+              fontSize: 24,
               fontWeight: 'bold',
-              textAlign: 'center'
+              color: '#FFFFFF',
+              textAlign: 'center',
+              marginBottom: 10,
+              textShadow: '0 0 10px #64C8FF'
             }}>
-              {stat.label}
+              {feature.title}
+            </div>
+            
+            <div style={{
+              fontSize: 16,
+              color: 'rgba(255,255,255,0.8)',
+              textAlign: 'center',
+              lineHeight: 1.4
+            }}>
+              {feature.description}
             </div>
           </div>
         );

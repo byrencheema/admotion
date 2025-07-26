@@ -1,4 +1,4 @@
-import { SCENE_TEMPLATES, TRANSITION_LIBRARY, getTemplatesByCategory, getTemplatesByStyle, getRandomTemplate } from './scene-templates';
+import { SCENE_TEMPLATES, TRANSITION_LIBRARY } from './scene-templates';
 import { TemplateVideoStructure, TemplateScene } from './template-director';
 
 export class TemplateGeneratorAgent {
@@ -53,9 +53,9 @@ export class TemplateGeneratorAgent {
   private injectPropsIntoTemplate(componentCode: string, props: Record<string, unknown>, templateId: string): string {
     // Replace template placeholders with actual prop values
     
-    // Hero templates
-    if (templateId === 'hero-animated-title' || templateId === 'hero-kinetic-text' || templateId === 'hero-3d-float') {
-      componentCode = componentCode.replace(/{title}/g, `"${props.title || 'Your Title'}"`);
+    // Hero templates  
+    if (templateId === 'hero-animated-title' || templateId === 'hero-kinetic-text' || templateId === 'hero-3d-float' || templateId === 'hero-bubble-text' || templateId === 'hero-typewriter') {
+      componentCode = componentCode.replace(/{title}/g, `"${props.title || 'Your Amazing Title'}"`);
       componentCode = componentCode.replace(/{subtitle}/g, props.subtitle ? `"${props.subtitle}"` : 'undefined');
     } else if (templateId === 'logo-reveal') {
       componentCode = componentCode.replace(/{brandName}/g, `"${props.brandName || 'Your Brand'}"`);
@@ -63,7 +63,7 @@ export class TemplateGeneratorAgent {
       componentCode = componentCode.replace(/{mainText}/g, `"${props.mainText || 'Your Message'}"`);
       componentCode = componentCode.replace(/{buttonText}/g, `"${props.buttonText || 'Click Here'}"`);
     // Feature templates
-    } else if (templateId === 'features-morphing-cards' || templateId === 'features-wave-reveal') {
+    } else if (templateId === 'features-morphing-cards' || templateId === 'features-wave-reveal' || templateId === 'features-animated-list') {
       let features;
       if (Array.isArray(props.features)) {
         if (props.features.length > 0 && typeof props.features[0] === 'string') {
@@ -99,15 +99,20 @@ export class TemplateGeneratorAgent {
       componentCode = componentCode.replace(/{features}/g, JSON.stringify(features));
     
     // Stats templates
-    } else if (templateId === 'stats-counter-dynamic') {
+    } else if (templateId === 'stats-counter-dynamic' || templateId === 'stats-chart-animated' || templateId === 'stats-circular-progress') {
       let stats;
       if (Array.isArray(props.stats)) {
-        stats = props.stats;
+        // Ensure all stats have required fields
+        stats = props.stats.map((stat, index) => ({
+          ...stat,
+          color: stat.color || ['#4361ee', '#f72585', '#4cc9f0', '#4895ef', '#560bad'][index % 5],
+          suffix: stat.suffix || (typeof stat.value === 'number' && stat.value > 100 ? '+' : '%')
+        }));
       } else {
         stats = [
-          { label: 'Users', value: 50000, suffix: '+', color: '#FF6B6B' },
-          { label: 'Downloads', value: 100000, suffix: '+', color: '#4ECDC4' },
-          { label: 'Rating', value: 4.9, suffix: '/5', color: '#FFE66D' }
+          { label: 'Users', value: 50000, suffix: '+', color: '#4361ee' },
+          { label: 'Downloads', value: 100000, suffix: '+', color: '#f72585' },
+          { label: 'Rating', value: 4.9, suffix: '/5', color: '#4cc9f0' }
         ];
       }
       componentCode = componentCode.replace(/{stats}/g, JSON.stringify(stats));
@@ -116,6 +121,11 @@ export class TemplateGeneratorAgent {
     } else if (templateId === 'cta-neon-pulse' || templateId === 'cta-liquid-morph') {
       componentCode = componentCode.replace(/{mainText}/g, `"${props.mainText || 'Ready to Get Started?'}"`);      
       componentCode = componentCode.replace(/{buttonText}/g, `"${props.buttonText || 'Start Now'}"`);      
+    }
+    
+    // Background templates
+    if (templateId === 'background-liquid-wave') {
+      // No props needed for this template
     }
 
     return componentCode;
@@ -204,7 +214,7 @@ export { ${sceneName} };`;
       .join('\n');
 
     // Generate audio components
-    const audioComponents = this.generateAudioComponents(videoStructure.audio);
+    const audioComponents = this.generateAudioComponents(videoStructure);
 
     // Generate scene sequences with transitions
     const sceneSequences = videoStructure.scenes.map((scene, index) => {
@@ -251,8 +261,35 @@ export const GeneratedComp: React.FC = () => {
     return masterComponent;
   }
 
-  private generateAudioComponents(audio: TemplateAudio): string {
-    // Skip audio for now since files don't exist
-    return `{/* Audio disabled - no audio files available */}`;
+  private generateAudioComponents(videoStructure: TemplateVideoStructure): string {
+    const audioComponents = [];
+    
+    // Background music throughout the video
+    audioComponents.push(`
+      {/* Background Music */}
+      <Audio src={staticFile('audio/background/relaxing-guitar-loop.mp3')} volume={0.15} />`);
+    
+    // Sound effects for transitions - start 30 frames (1 second) before transition
+    let currentFrame = 0;
+    videoStructure.scenes.forEach((scene, index) => {
+      currentFrame += scene.durationInFrames;
+      
+      // Add transition sound effects
+      if (index < videoStructure.scenes.length - 1) {
+        const transition = videoStructure.transitions[index];
+        if (transition) {
+          const effectFile = transition.type === 'slide' ? 'whoosh-short-realistic.mp3' : 'bubble-pop.mp3';
+          const startFrame = Math.max(0, currentFrame - 30); // Start 1 second (30 frames) early
+          audioComponents.push(`
+      {/* Transition effect for ${transition.type} */}
+      <Sequence from={${startFrame}} durationInFrames={${transition.durationInFrames + 30}}>
+        <Audio src={staticFile('audio/effects/${effectFile}')} volume={0.4} />
+      </Sequence>`);
+          currentFrame += transition.durationInFrames;
+        }
+      }
+    });
+    
+    return audioComponents.join('');
   }
 }

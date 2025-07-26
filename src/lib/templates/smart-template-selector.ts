@@ -1,4 +1,4 @@
-import { SCENE_TEMPLATES, getTemplatesByCategory, getTemplatesByStyle, getTemplatesByComplexity } from './scene-templates';
+import { SCENE_TEMPLATES, getTemplatesByCategory } from './scene-templates';
 
 export interface ContentAnalysis {
   industry: string;
@@ -45,24 +45,32 @@ export class SmartTemplateSelector {
       tone = 'minimal';
     }
     
-    // Visual style mapping
+    // Visual style mapping with more variety
     let visualStyle: ContentAnalysis['visualStyle'] = 'modern';
+    const visualOptions: ContentAnalysis['visualStyle'][] = [];
+    
     switch (tone) {
       case 'tech':
-        visualStyle = 'futuristic';
+        visualOptions.push('futuristic', 'modern');
         break;
       case 'organic':
-        visualStyle = 'organic';
+        visualOptions.push('organic', 'minimal');
         break;
       case 'minimal':
-        visualStyle = 'minimal';
+        visualOptions.push('minimal', 'modern');
         break;
       case 'luxury':
-        visualStyle = 'modern';
+        visualOptions.push('modern', 'futuristic');
+        break;
+      case 'playful':
+        visualOptions.push('modern', 'organic', 'retro');
         break;
       default:
-        visualStyle = 'modern';
+        visualOptions.push('modern', 'futuristic', 'minimal');
     }
+    
+    // Randomly pick from appropriate visual styles
+    visualStyle = visualOptions[Math.floor(Math.random() * visualOptions.length)];
     
     // Complexity based on prompt sophistication
     let complexity: ContentAnalysis['complexity'] = 'medium';
@@ -93,22 +101,43 @@ export class SmartTemplateSelector {
   }
   
   /**
-   * Suggests optimal content flow based on industry and tone
+   * Suggests optimal content flow based on industry and tone with randomization
    */
   private suggestContentFlow(industry: string, tone: string): string[] {
-    const baseFlow = ['hero', 'features', 'cta'];
+    const flowOptions: { [key: string]: string[][] } = {
+      'technology': [
+        ['hero', 'product', 'features', 'stats', 'cta'],
+        ['hero', 'features', 'product', 'stats', 'cta'],
+        ['hero', 'stats', 'features', 'product', 'cta']
+      ],
+      'gaming': [
+        ['hero', 'features', 'product', 'cta'],
+        ['hero', 'product', 'features', 'stats', 'cta'],
+        ['hero', 'features', 'stats', 'cta']
+      ],
+      'luxury': [
+        ['hero', 'product', 'features', 'cta', 'logo'],
+        ['hero', 'features', 'product', 'cta'],
+        ['hero', 'stats', 'features', 'cta']
+      ]
+    };
     
-    if (industry === 'technology') {
-      return ['hero', 'product', 'features', 'stats', 'cta'];
-    } else if (industry === 'gaming') {
-      return ['hero', 'features', 'product', 'cta'];
-    } else if (industry === 'luxury') {
-      return ['hero', 'product', 'features', 'cta', 'logo'];
-    } else if (tone === 'professional') {
-      return ['hero', 'features', 'stats', 'cta'];
-    }
+    const toneFlows: { [key: string]: string[][] } = {
+      'professional': [
+        ['hero', 'features', 'stats', 'cta'],
+        ['hero', 'product', 'features', 'cta'],
+        ['hero', 'stats', 'features', 'cta']
+      ],
+      'playful': [
+        ['hero', 'features', 'cta'],
+        ['hero', 'product', 'features', 'cta'],
+        ['hero', 'features', 'stats', 'cta']
+      ]
+    };
     
-    return baseFlow;
+    // Pick random flow from available options
+    const flows = flowOptions[industry] || toneFlows[tone] || [['hero', 'features', 'cta']];
+    return flows[Math.floor(Math.random() * flows.length)];
   }
   
   /**
@@ -176,11 +205,24 @@ export class SmartTemplateSelector {
         if (templateText.includes(keyword)) score += 1;
       });
       
+      // Add randomization factor to prevent repetition
+      score += Math.random() * 2; // Random boost up to 2 points
+      
       return { template, score };
     });
     
     // Sort by score and return best
     scored.sort((a, b) => b.score - a.score);
+    
+    // If multiple templates have similar scores, randomly pick one
+    const topScore = scored[0]?.score || 0;
+    const topTemplates = scored.filter(s => Math.abs(s.score - topScore) < 1.5);
+    
+    if (topTemplates.length > 1) {
+      const randomIndex = Math.floor(Math.random() * topTemplates.length);
+      return topTemplates[randomIndex]?.template;
+    }
+    
     return scored[0]?.template;
   }
   
@@ -194,7 +236,7 @@ export class SmartTemplateSelector {
     const props: Record<string, unknown> = {};
     
     // Extract potential brand/product name from prompt
-    const words = prompt.split(/\s+/);
+    // const words = prompt.split(/\s+/);
     const brandName = this.extractBrandName(prompt) || 'Your Brand';
     const productName = this.extractProductName(prompt) || 'Amazing Product';
     
@@ -253,7 +295,7 @@ export class SmartTemplateSelector {
   
   private generateTitle(prompt: string, analysis: ContentAnalysis): string {
     const maxLength = 40;
-    let title = prompt.length > maxLength ? prompt.substring(0, maxLength) + '...' : prompt;
+    const title = prompt.length > maxLength ? prompt.substring(0, maxLength) + '...' : prompt;
     
     // Make it more engaging based on tone
     switch (analysis.tone) {

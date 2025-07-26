@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { SCENE_TEMPLATES, TRANSITION_LIBRARY, AUDIO_LIBRARY, getTemplatesByCategory, getTemplatesByStyle, getRandomTemplate } from './scene-templates';
+import { SCENE_TEMPLATES, TRANSITION_LIBRARY, AUDIO_LIBRARY } from './scene-templates';
 import { SmartTemplateSelector } from './smart-template-selector';
 
 const anthropic = new Anthropic({
@@ -269,69 +269,4 @@ Prioritize advanced templates for maximum visual impact.`
     return structure;
   }
 
-  private createBasicFallbackStructure(prompt: string): TemplateVideoStructure {
-    const title = prompt.length > 30 ? prompt.substring(0, 30) + "..." : prompt;
-    
-    return {
-      scenes: [
-        {
-          templateId: "hero-kinetic-text",
-          durationInFrames: 180,
-          props: {
-            title: title
-          }
-        },
-        {
-          templateId: "features-morphing-cards",
-          durationInFrames: 200,
-          props: {
-            features: [
-              { title: "Innovation", description: "Cutting-edge technology", color: "#FF6B6B" },
-              { title: "Quality", description: "Premium experience", color: "#4ECDC4" },
-              { title: "Performance", description: "Lightning fast results", color: "#FFE66D" }
-            ]
-          }
-        },
-        {
-          templateId: "stats-counter-dynamic",
-          durationInFrames: 180,
-          props: {
-            stats: [
-              { label: "Users", value: 50000, suffix: "+", color: "#FF6B6B" },
-              { label: "Rating", value: 4.9, suffix: "/5", color: "#4ECDC4" }
-            ]
-          }
-        },
-        {
-          templateId: "cta-neon-pulse",
-          durationInFrames: 160,
-          props: {
-            mainText: "Ready to Transform?",
-            buttonText: "Start Now"
-          }
-        },
-        {
-          templateId: "logo-reveal",
-          durationInFrames: 180,
-          props: {
-            brandName: "Your Brand"
-          }
-        }
-      ],
-      transitions: [
-        { type: "wipe", durationInFrames: 20 },
-        { type: "fade", durationInFrames: 15 },
-        { type: "slide", durationInFrames: 18 },
-        { type: "wipe", durationInFrames: 15 }
-      ],
-      audio: {
-        background: "modern-electronic.mp3",
-        effects: [
-          { src: "impact-whoosh.mp3", triggerFrame: 30, volume: 0.5 },
-          { src: "transition-swoosh.mp3", triggerFrame: 180, volume: 0.4 },
-          { src: "transition-swoosh.mp3", triggerFrame: 420, volume: 0.4 }
-        ]
-      }
-    };
-  }
 }

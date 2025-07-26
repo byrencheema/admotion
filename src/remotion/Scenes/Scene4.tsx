@@ -1,131 +1,141 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, random } from 'remotion';
-import { Circle, Rect } from '@remotion/shapes';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } from 'remotion';
 
 const Scene4: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
-  const productName = "Instagram Story Creator";
-  const features = ["Drag & Drop Interface","Real-time Preview","Export in Seconds"] || ['Premium Quality', 'Fast Performance', 'User Friendly'];
-
-  // 3D rotation effect
-  const rotationY = interpolate(frame, [0, 180], [0, 360]);
-  const rotationX = Math.sin(frame * 0.02) * 10;
+  const rawStats = [{"label":"Success Rate","value":89,"color":"#4361ee","suffix":"%"},{"label":"Verified Users","value":95,"color":"#f72585","suffix":"%"},{"label":"Elite Members","value":78,"color":"#4cc9f0","suffix":"%"}] || [
+    { label: 'Success Rate', value: 85, suffix: '%', color: '#4361ee' },
+    { label: 'Users', value: 12000, suffix: '+', color: '#f72585' },
+    { label: 'Rating', value: 4.8, suffix: '/5', color: '#4cc9f0' }
+  ];
   
-  // Product glow effect
-  const glowPulse = interpolate((frame % 120), [0, 60, 120], [0.5, 1.2, 0.5]);
-  
-  // Feature highlights
-  const highlightFeature = Math.floor((frame / 60) % features.length);
+  // Ensure all stats have colors
+  const stats = rawStats.map((stat, index) => ({
+    ...stat,
+    color: stat.color || ['#4361ee', '#f72585', '#4cc9f0', '#4895ef', '#560bad'][index % 5],
+    suffix: stat.suffix || ''
+  }));
 
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at center, #2C3E50 0%, #4A6741 30%, #1A1A1A 100%)',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      gap: 100
     }}>
-      {/* 3D Product representation */}
-      <div style={{
-        position: 'relative',
-        transform: `perspective(1000px) rotateY(${rotationY}deg) rotateX(${rotationX}deg) scale(1.2)`,
-        width: 300,
-        height: 300
-      }}>
-        {/* Main product shape */}
-        <div style={{
-          width: '100%',
-          height: '100%',
-          background: `linear-gradient(145deg, 
-            rgba(255,255,255,0.1) 0%, 
-            rgba(100,200,255,0.3) 50%, 
-            rgba(255,255,255,0.1) 100%)
-          `,
-          borderRadius: '20px',
-          border: '2px solid rgba(255,255,255,0.3)',
-          boxShadow: `
-            0 0 ${30 * glowPulse}px rgba(100,200,255,0.5),
-            inset 0 0 50px rgba(255,255,255,0.1)
-          `,
-          backdropFilter: 'blur(10px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          {/* Product icon/logo */}
-          <div style={{
-            fontSize: 80,
-            color: '#64C8FF',
-            textShadow: `0 0 20px #64C8FF`,
-            transform: `rotateY(${-rotationY}deg)` // Counter-rotate to keep icon upright
-          }}>
-            📱
-          </div>
-        </div>
+      {stats.map((stat, index) => {
+        const startFrame = index * 20;
+        const progress = interpolate(
+          frame - startFrame,
+          [0, 90],
+          [0, 1],
+          { extrapolateRight: 'clamp' }
+        );
         
-        {/* Floating particles around product */}
-        {Array.from({ length: 15 }, (_, i) => {
-          const angle = (i / 15) * Math.PI * 2;
-          const radius = 200 + Math.sin((frame + i * 10) * 0.05) * 30;
-          const x = Math.cos(angle + frame * 0.02) * radius;
-          const y = Math.sin(angle + frame * 0.02) * radius * 0.6;
+        const numericValue = typeof stat.value === 'string' 
+          ? parseFloat(stat.value.replace(/[^0-9.]/g, '')) || 80
+          : stat.value;
           
-          return (
-            <Circle
-              key={i}
-              x={x}
-              y={y}
-              width={4}
-              height={4}
-              color="#64C8FF"
-              opacity={0.6}
-            />
-          );
-        })}
-      </div>
-      
-      {/* Product name */}
-      <div style={{
-        position: 'absolute',
-        top: '15%',
-        width: '100%',
-        textAlign: 'center',
-        fontSize: 48,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        textShadow: '0 4px 20px rgba(0,0,0,0.5)',
-        opacity: interpolate(frame, [0, 30], [0, 1])
-      }}>
-        "Instagram Story Creator"
-      </div>
-      
-      {/* Features list */}
-      <div style={{
-        position: 'absolute',
-        bottom: '15%',
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        gap: 40
-      }}>
-        {features.map((feature, index) => (
+        const progressPercent = Math.min(numericValue, 100);
+        const radius = 80;
+        const circumference = 2 * Math.PI * radius;
+        const strokeDashoffset = circumference - (progressPercent / 100) * circumference * progress;
+        
+        const pulse = 1 + Math.sin(frame / 15) * 0.03;
+        
+        const displayValue = typeof stat.value === 'string'
+          ? stat.value
+          : (numericValue < 10 
+            ? (numericValue * progress).toFixed(1)
+            : Math.floor(numericValue * progress).toLocaleString());
+
+        return (
           <div
             key={index}
             style={{
-              opacity: interpolate(frame - index * 20, [0, 20], [0, 1]),
-              transform: `scale(${index === highlightFeature ? 1.1 : 1})`,
-              transition: 'transform 0.3s ease',
-              fontSize: 18,
-              color: index === highlightFeature ? '#64C8FF' : '#FFFFFF',
-              textShadow: index === highlightFeature ? '0 0 10px #64C8FF' : 'none',
-              fontWeight: index === highlightFeature ? 'bold' : 'normal'
+              position: 'relative',
+              width: 250,
+              height: 250,
+              transform: `scale(${pulse})`,
+              opacity: interpolate(frame - startFrame, [0, 20], [0, 1])
             }}
           >
-            {feature}
+            {/* Background circle */}
+            <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 200 200"
+              style={{
+                position: 'absolute',
+                transform: 'rotate(-90deg)'
+              }}
+            >
+              <circle
+                cx="100"
+                cy="100"
+                r={radius}
+                fill="none"
+                stroke="rgba(30, 41, 59, 0.2)"
+                strokeWidth="12"
+              />
+            </svg>
+            
+            {/* Progress circle */}
+            <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 200 200"
+              style={{
+                position: 'absolute',
+                transform: 'rotate(-90deg)'
+              }}
+            >
+              <circle
+                cx="100"
+                cy="100"
+                r={radius}
+                fill="none"
+                stroke={stat.color || '#4361ee'}
+                strokeWidth="12"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                style={{
+                  filter: `drop-shadow(0 0 10px ${stat.color || '#4361ee'})`
+                }}
+              />
+            </svg>
+            
+            {/* Value display */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: 36,
+                fontWeight: 'bold',
+                color: '#1e293b',
+                marginBottom: 8
+              }}>
+                {displayValue}{stat.suffix || ''}
+              </div>
+              <div style={{
+                fontSize: 18,
+                color: '#475569',
+                fontWeight: '500'
+              }}>
+                {stat.label}
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </AbsoluteFill>
   );
 };

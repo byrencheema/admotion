@@ -2,6 +2,89 @@ This is a remotion based video app that uses React to render videos.
 
 Full remotion docs can be found here: https://www.remotion.dev/docs/. Consult these docs often if you're uncertain.
 
+## CRITICAL AI GUIDELINES
+
+When generating Remotion components, you MUST follow these rules to prevent errors:
+
+### 1. Import Requirements
+ALWAYS include these imports at the top:
+```typescript
+import React from 'react';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } from 'remotion';
+```
+
+### 2. Component Structure
+ALWAYS use this exact pattern:
+```typescript
+export const ComponentName: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
+  
+  // Your animations here
+  
+  return (
+    <AbsoluteFill>
+      {/* Your content */}
+    </AbsoluteFill>
+  );
+};
+```
+
+### 3. Animation Patterns
+Use these SAFE animation patterns:
+
+**Spring Animation:**
+```typescript
+const scale = spring({
+  fps,
+  frame,
+  config: { damping: 100, stiffness: 200 }
+});
+```
+
+**Interpolate Animation:**
+```typescript
+const opacity = interpolate(frame, [0, 30], [0, 1], {
+  extrapolateLeft: 'clamp',
+  extrapolateRight: 'clamp'
+});
+```
+
+### 4. Sequence Usage
+```typescript
+<Sequence from={30} durationInFrames={60}>
+  <div>Content appears after 30 frames for 60 frames</div>
+</Sequence>
+```
+
+### 5. Available Packages
+These packages are INSTALLED and SAFE to use:
+- `@remotion/shapes`: Circle, Rect, Triangle, Star, Polygon
+- `@remotion/noise`: noise2D, noise3D
+- `@remotion/transitions`: fade, slide, wipe, zoom
+- `react-confetti`: Confetti component
+
+### 6. DO NOT USE
+- Text from @remotion/shapes (causes errors)
+- Complex external libraries not listed above
+- Any package not explicitly mentioned
+
+### 7. Safe Shape Usage
+```typescript
+import { Circle, Rect } from '@remotion/shapes';
+
+<Circle
+  radius={100}
+  fill="blue"
+  style={{
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)'
+  }}
+/>
+```
+
 Project structure
 
 The Root file is usually named "src/Root.tsx" and looks like this:

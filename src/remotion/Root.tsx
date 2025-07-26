@@ -1,8 +1,6 @@
 import { Composition } from "remotion";
 import { GeneratedComp } from "./Generated/GeneratedComp";
 import {
-  COMP_NAME,
-  defaultMyCompProps,
   DURATION_IN_FRAMES,
   VIDEO_FPS,
   VIDEO_HEIGHT,

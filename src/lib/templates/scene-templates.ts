@@ -341,7 +341,7 @@ const {SCENE_NAME}: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const features = {features} || [
+  const featuresData = {features} || [
     { title: 'Feature 1', description: 'Amazing capability', color: '#FF6B6B' },
     { title: 'Feature 2', description: 'Powerful tool', color: '#4ECDC4' },
     { title: 'Feature 3', description: 'Easy to use', color: '#FFE66D' }
@@ -386,7 +386,7 @@ const {SCENE_NAME}: React.FC = () => {
       justifyContent: 'center',
       gap: 60
     }}>
-      {features.map((feature, index) => {
+      {featuresData.map((feature, index) => {
         const morph = cardMorph(index);
         const particles = generateParticles(index);
         const cardX = (index - 1) * 320;
@@ -468,7 +468,7 @@ const {SCENE_NAME}: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const features = {features} || [
+  const featuresData = {features} || [
     { title: 'Innovation', emoji: '🚀' },
     { title: 'Quality', emoji: '⭐' },
     { title: 'Speed', emoji: '⚡' }
@@ -533,7 +533,7 @@ const {SCENE_NAME}: React.FC = () => {
         padding: '0 100px',
         zIndex: 10
       }}>
-        {features.map((feature, index) => {
+        {featuresData.map((feature, index) => {
           const appearDelay = index * 40;
           const scale = spring({
             fps,
@@ -967,7 +967,7 @@ const {SCENE_NAME}: React.FC = () => {
   const { fps, width, height } = useVideoConfig();
 
   const productName = {productName};
-  const features = {features} || ['Premium Quality', 'Fast Performance', 'User Friendly'];
+  const featuresList = {features} || ['Premium Quality', 'Fast Performance', 'User Friendly'];
 
   // 3D rotation effect
   const rotationY = interpolate(frame, [0, 180], [0, 360]);
@@ -977,7 +977,7 @@ const {SCENE_NAME}: React.FC = () => {
   const glowPulse = interpolate((frame % 120), [0, 60, 120], [0.5, 1.2, 0.5]);
   
   // Feature highlights
-  const highlightFeature = Math.floor((frame / 60) % features.length);
+  const highlightFeature = Math.floor((frame / 60) % featuresList.length);
 
   return (
     <AbsoluteFill style={{
@@ -1070,7 +1070,7 @@ const {SCENE_NAME}: React.FC = () => {
         justifyContent: 'center',
         gap: 40
       }}>
-        {features.map((feature, index) => (
+        {featuresList.map((feature, index) => (
           <div
             key={index}
             style={{
@@ -1108,7 +1108,7 @@ const {SCENE_NAME}: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const stats = {stats} || [
+  const statsData = {stats} || [
     { label: 'Jan', value: 50 },
     { label: 'Feb', value: 80 },
     { label: 'Mar', value: 30 },
@@ -1125,9 +1125,9 @@ const {SCENE_NAME}: React.FC = () => {
   const chartHeight = 500;
   const padding = 60;
 
-  const xScale = (x) => (x / (stats.length - 1)) * (chartWidth - padding * 2) + padding;
+  const xScale = (x) => (x / (statsData.length - 1)) * (chartWidth - padding * 2) + padding;
   const yScale = (y) => chartHeight - padding - (y / 100) * (chartHeight - padding * 2);
-  const barWidth = ((chartWidth - padding * 2) / stats.length) * 0.7;
+  const barWidth = ((chartWidth - padding * 2) / statsData.length) * 0.7;
 
   const titleOpacity = interpolate(frame, [0, 30], [0, 1], { extrapolateRight: 'clamp' });
 
@@ -1167,7 +1167,7 @@ const {SCENE_NAME}: React.FC = () => {
           />
 
           {/* X-axis labels */}
-          {stats.map((point, i) => (
+          {statsData.map((point, i) => (
             <text
               key={\`x-label-\${i}\`}
               x={xScale(i)}
@@ -1182,7 +1182,7 @@ const {SCENE_NAME}: React.FC = () => {
           ))}
 
           {/* Animated bars */}
-          {stats.map((point, i) => {
+          {statsData.map((point, i) => {
             const numericValue = typeof point.value === 'string' 
               ? parseFloat(point.value.replace(/[^0-9.]/g, '')) || 50
               : point.value;
@@ -1576,7 +1576,7 @@ const {SCENE_NAME}: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const features = {features} || [
+  const featuresData = {features} || [
     { title: 'Feature One', emoji: '🚀', color: '#3b82f6' },
     { title: 'Feature Two', emoji: '⭐', color: '#60a5fa' },
     { title: 'Feature Three', emoji: '⚡', color: '#93c5fd' }
@@ -1592,7 +1592,7 @@ const {SCENE_NAME}: React.FC = () => {
       padding: 60,
       gap: 40
     }}>
-      {features.map((item, i) => {
+      {featuresData.map((item, i) => {
         const delay = i * 15;
 
         const slideX = spring({
@@ -1820,7 +1820,7 @@ const {SCENE_NAME}: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const features = {features} || [
+  const featuresData = {features} || [
     { title: 'Neural Networks', description: 'AI-powered processing', emoji: '🧠', color: '#64C8FF' },
     { title: 'Quantum Speed', description: 'Instant calculations', emoji: '⚡', color: '#FF6B9D' },
     { title: 'Holographic UI', description: 'Next-gen interface', emoji: '🔮', color: '#9B59B6' }
@@ -1835,7 +1835,7 @@ const {SCENE_NAME}: React.FC = () => {
       gap: 60,
       padding: 80
     }}>
-      {features.map((feature, index) => {
+      {featuresData.map((feature, index) => {
         const delay = index * 20;
         const cardScale = spring({
           fps,

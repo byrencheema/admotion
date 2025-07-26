@@ -1,132 +1,87 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, random } from 'remotion';
-import { Circle, Rect } from '@remotion/shapes';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } from 'remotion';
 
 const Scene3: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
-  const productName = "Premium Dating Experience";
-  const features = ["Private Mode","Priority Matching","Video Chat","Background Verification"] || ['Premium Quality', 'Fast Performance', 'User Friendly'];
-
-  // 3D rotation effect
-  const rotationY = interpolate(frame, [0, 180], [0, 360]);
-  const rotationX = Math.sin(frame * 0.02) * 10;
-  
-  // Product glow effect
-  const glowPulse = interpolate((frame % 120), [0, 60, 120], [0.5, 1.2, 0.5]);
-  
-  // Feature highlights
-  const highlightFeature = Math.floor((frame / 60) % features.length);
+  const featuresData = [{"title":"AI Matchmaking","description":"Advanced algorithm for perfect matches"},{"title":"Verified Profiles","description":"Elite verification process"},{"title":"Luxury Events","description":"Exclusive in-person gatherings"},{"title":"Concierge Service","description":"24/7 personal assistance"}] || [
+    { title: 'Neural Networks', description: 'AI-powered processing', emoji: '🧠', color: '#64C8FF' },
+    { title: 'Quantum Speed', description: 'Instant calculations', emoji: '⚡', color: '#FF6B9D' },
+    { title: 'Holographic UI', description: 'Next-gen interface', emoji: '🔮', color: '#9B59B6' }
+  ];
 
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at center, #0F172A 0%, #1E293B 50%, #334155 100%)',
+      background: 'radial-gradient(ellipse at center, #0D1421 0%, #1A1A2E 50%, #16213E 100%)',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      gap: 60,
+      padding: 80
     }}>
-      {/* 3D Product representation */}
-      <div style={{
-        position: 'relative',
-        transform: `perspective(1000px) rotateY(${rotationY}deg) rotateX(${rotationX}deg) scale(1.2)`,
-        width: 300,
-        height: 300
-      }}>
-        {/* Main product shape */}
-        <div style={{
-          width: '100%',
-          height: '100%',
-          background: `linear-gradient(145deg, 
-            rgba(255,255,255,0.1) 0%, 
-            rgba(100,200,255,0.3) 50%, 
-            rgba(255,255,255,0.1) 100%)
-          `,
-          borderRadius: '20px',
-          border: '2px solid rgba(255,255,255,0.3)',
-          boxShadow: `
-            0 0 ${30 * glowPulse}px rgba(100,200,255,0.5),
-            inset 0 0 50px rgba(255,255,255,0.1)
-          `,
-          backdropFilter: 'blur(10px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          {/* Product icon/logo */}
-          <div style={{
-            fontSize: 48,
-            color: '#64C8FF',
-            textShadow: `0 0 20px #64C8FF`,
-            fontWeight: 'bold',
-            letterSpacing: '2px'
-          }}>
-            {productName.split(' ')[0].toUpperCase()}
-          </div>
-        </div>
+      {featuresData.map((feature, index) => {
+        const delay = index * 20;
+        const cardScale = spring({
+          fps,
+          frame: frame - delay,
+          config: { damping: 200, stiffness: 150 }
+        });
         
-        {/* Floating particles around product */}
-        {Array.from({ length: 15 }, (_, i) => {
-          const angle = (i / 15) * Math.PI * 2;
-          const radius = 200 + Math.sin((frame + i * 10) * 0.05) * 30;
-          const x = Math.cos(angle + frame * 0.02) * radius;
-          const y = Math.sin(angle + frame * 0.02) * radius * 0.6;
-          
-          return (
-            <Circle
-              key={i}
-              x={x}
-              y={y}
-              width={4}
-              height={4}
-              color="#64C8FF"
-              opacity={0.6}
-            />
-          );
-        })}
-      </div>
-      
-      {/* Product name */}
-      <div style={{
-        position: 'absolute',
-        top: '15%',
-        width: '100%',
-        textAlign: 'center',
-        fontSize: 48,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        textShadow: '0 4px 20px rgba(0,0,0,0.5)',
-        opacity: interpolate(frame, [0, 30], [0, 1])
-      }}>
-        "Premium Dating Experience"
-      </div>
-      
-      {/* Features list */}
-      <div style={{
-        position: 'absolute',
-        bottom: '15%',
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        gap: 40
-      }}>
-        {features.map((feature, index) => (
+        const prismEffect = Math.sin((frame + index * 50) * 0.05) * 5;
+        
+        return (
           <div
             key={index}
             style={{
-              opacity: interpolate(frame - index * 20, [0, 20], [0, 1]),
-              transform: `scale(${index === highlightFeature ? 1.1 : 1})`,
-              transition: 'transform 0.3s ease',
-              fontSize: 18,
-              color: index === highlightFeature ? '#60A5FA' : '#E2E8F0',
-              textShadow: index === highlightFeature ? '0 0 10px #64C8FF' : 'none',
-              fontWeight: index === highlightFeature ? 'bold' : 'normal'
+              transform: `scale(${cardScale}) translateY(${prismEffect}px)`,
+              opacity: interpolate(frame - delay, [0, 30], [0, 1]),
+              width: 280,
+              height: 350,
+              position: 'relative',
+              borderRadius: 20,
+              background: 'linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(100,200,255,0.2) 50%, rgba(255,255,255,0.05) 100%)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 0 30px rgba(100,200,255,0.3), inset 0 0 50px rgba(255,255,255,0.1)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 20,
+              padding: 30
             }}
           >
-            {feature}
+            <div style={{
+              fontSize: 48,
+              marginBottom: 10,
+              filter: 'drop-shadow(0 0 10px #64C8FF)'
+            }}>
+              {feature.emoji || '⭐'}
+            </div>
+            
+            <div style={{
+              fontSize: 24,
+              fontWeight: 'bold',
+              color: '#FFFFFF',
+              textAlign: 'center',
+              marginBottom: 10,
+              textShadow: '0 0 10px #64C8FF'
+            }}>
+              {feature.title}
+            </div>
+            
+            <div style={{
+              fontSize: 16,
+              color: 'rgba(255,255,255,0.8)',
+              textAlign: 'center',
+              lineHeight: 1.4
+            }}>
+              {feature.description}
+            </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </AbsoluteFill>
   );
 };

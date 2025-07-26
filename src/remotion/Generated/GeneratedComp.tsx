@@ -18,54 +18,54 @@ export const GeneratedComp: React.FC = () => {
       {/* Background Music */}
       <Audio src={staticFile('audio/background/relaxing-guitar-loop.mp3')} volume={0.15} />
       {/* Transition effect for fade */}
-      <Sequence from={150} durationInFrames={50}>
+      <Sequence from={120} durationInFrames={50}>
         <Audio src={staticFile('audio/effects/bubble-pop.mp3')} volume={0.4} />
       </Sequence>
       {/* Transition effect for slide */}
-      <Sequence from={380} durationInFrames={55}>
+      <Sequence from={320} durationInFrames={55}>
         <Audio src={staticFile('audio/effects/whoosh-short-realistic.mp3')} volume={0.4} />
       </Sequence>
       {/* Transition effect for wipe */}
-      <Sequence from={585} durationInFrames={50}>
+      <Sequence from={545} durationInFrames={50}>
         <Audio src={staticFile('audio/effects/bubble-pop.mp3')} volume={0.4} />
       </Sequence>
       {/* Transition effect for fade */}
-      <Sequence from={770} durationInFrames={50}>
+      <Sequence from={745} durationInFrames={50}>
         <Audio src={staticFile('audio/effects/bubble-pop.mp3')} volume={0.4} />
       </Sequence>
       
       {/* Scene Transitions */}
       <TransitionSeries>
         
-        <TransitionSeries.Sequence durationInFrames={180}>
+        <TransitionSeries.Sequence durationInFrames={150}>
           <Scene1 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           timing={linearTiming({durationInFrames: 20})}
           presentation={fade()}
         />
-        <TransitionSeries.Sequence durationInFrames={210}>
+        <TransitionSeries.Sequence durationInFrames={180}>
           <Scene2 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           timing={linearTiming({durationInFrames: 25})}
           presentation={slide()}
         />
-        <TransitionSeries.Sequence durationInFrames={180}>
+        <TransitionSeries.Sequence durationInFrames={200}>
           <Scene3 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           timing={linearTiming({durationInFrames: 20})}
           presentation={wipe()}
         />
-        <TransitionSeries.Sequence durationInFrames={165}>
+        <TransitionSeries.Sequence durationInFrames={180}>
           <Scene4 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           timing={linearTiming({durationInFrames: 20})}
           presentation={fade()}
         />
-        <TransitionSeries.Sequence durationInFrames={165}>
+        <TransitionSeries.Sequence durationInFrames={190}>
           <Scene5 />
         </TransitionSeries.Sequence>
       </TransitionSeries>

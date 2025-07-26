@@ -54,7 +54,7 @@ export class TemplateGeneratorAgent {
     // Replace template placeholders with actual prop values
     
     // Hero templates  
-    if (templateId === 'hero-animated-title' || templateId === 'hero-kinetic-text' || templateId === 'hero-3d-float' || templateId === 'hero-bubble-text' || templateId === 'hero-typewriter') {
+    if (templateId === 'hero-animated-title' || templateId === 'hero-kinetic-text' || templateId === 'hero-3d-float' || templateId === 'hero-bubble-text' || templateId === 'hero-typewriter' || templateId === 'hero-retro-neon') {
       componentCode = componentCode.replace(/{title}/g, `"${props.title || 'Your Amazing Title'}"`);
       componentCode = componentCode.replace(/{subtitle}/g, props.subtitle ? `"${props.subtitle}"` : 'undefined');
     } else if (templateId === 'logo-reveal') {
@@ -63,7 +63,7 @@ export class TemplateGeneratorAgent {
       componentCode = componentCode.replace(/{mainText}/g, `"${props.mainText || 'Your Message'}"`);
       componentCode = componentCode.replace(/{buttonText}/g, `"${props.buttonText || 'Click Here'}"`);
     // Feature templates
-    } else if (templateId === 'features-morphing-cards' || templateId === 'features-wave-reveal' || templateId === 'features-animated-list') {
+    } else if (templateId === 'features-morphing-cards' || templateId === 'features-wave-reveal' || templateId === 'features-animated-list' || templateId === 'features-holographic-cards') {
       let features;
       if (Array.isArray(props.features)) {
         if (props.features.length > 0 && typeof props.features[0] === 'string') {

@@ -1,125 +1,75 @@
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, random } from 'remotion';
-import { Circle, Rect } from '@remotion/shapes';
 
 const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const title = "Elite Singles";
-  const subtitle = "Where Luxury Meets Love";
-
-  // 3D floating elements
-  const floatingElements = Array.from({ length: 12 }, (_, i) => {
-    const baseX = random(`float-x-${i}`) * width;
-    const baseY = random(`float-y-${i}`) * height;
-    
-    const floatX = interpolate(
-      (frame + i * 10) % 180,
-      [0, 90, 180],
-      [baseX - 50, baseX + 50, baseX - 50]
-    );
-    
-    const floatY = interpolate(
-      (frame + i * 15) % 240,
-      [0, 120, 240],
-      [baseY - 30, baseY + 30, baseY - 30]
-    );
-    
-    const rotateZ = interpolate(frame + i * 5, [0, 180], [0, 360]);
-    const scale = 0.8 + Math.sin((frame + i * 20) * 0.05) * 0.3;
-    const opacity = 0.1 + Math.sin((frame + i * 12) * 0.03) * 0.1;
-    
-    return { x: floatX, y: floatY, rotate: rotateZ, scale, opacity, type: i % 3 };
-  });
-
-  const titleScale = spring({
-    fps,
-    frame,
-    config: { damping: 200, stiffness: 200 }
-  });
+  const title = "Love Meets Luxury";
+  const words = title.split(' ');
 
   return (
     <AbsoluteFill style={{
-      background: 'linear-gradient(145deg, #0F0C29 0%, #302B63 50%, #24243e 100%)',
+      background: 'radial-gradient(circle at center, #2D1B69 0%, #11052C 100%)',
       display: 'flex',
-      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 20
+      overflow: 'hidden'
     }}>
-      {/* Floating 3D elements */}
-      {floatingElements.map((element, i) => {
-        const size = 20 + (i % 3) * 15;
-        const color = ['#FF6B6B', '#4ECDC4', '#FFE66D'][element.type];
-        
-        return (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: element.x,
-              top: element.y,
-              transform: `scale(${element.scale}) rotateZ(${element.rotate}deg)`,
-              opacity: element.opacity,
-              filter: 'blur(1px)'
-            }}
-          >
-            {element.type === 0 && (
-              <Circle
-                width={size}
-                height={size}
-                color={color}
-                x={0}
-                y={0}
-              />
-            )}
-            {element.type === 1 && (
-              <Rect
-                width={size}
-                height={size}
-                color={color}
-                x={0}
-                y={0}
-              />
-            )}
-            {element.type === 2 && (
-              <div style={{
-                width: size,
-                height: size,
-                background: color,
-                borderRadius: '30%',
-                transform: 'rotateX(45deg)'
-              }} />
-            )}
-          </div>
-        );
-      })}
-      
       <div style={{
-        transform: `scale(${titleScale}) perspective(1000px) rotateX(5deg)`,
-        fontSize: 72,
-        fontWeight: 'bold',
-        color: 'white',
-        textAlign: 'center',
-        textShadow: '0 10px 30px rgba(0,0,0,0.5)',
-        zIndex: 10
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 20,
+        maxWidth: '80%'
       }}>
-        "Elite Singles"
+        {words.map((word, i) => {
+          const wordDelay = i * 8;
+          const scale = spring({
+            fps,
+            frame: frame - wordDelay,
+            config: { damping: 200, stiffness: 300 }
+          });
+          
+          const slideX = interpolate(
+            frame - wordDelay,
+            [0, 20],
+            [random(`word-x-${i}`) * 200 - 100, 0],
+            { extrapolateRight: 'clamp' }
+          );
+          
+          const opacity = interpolate(
+            frame - wordDelay,
+            [0, 15, 120, 135],
+            [0, 1, 1, 0]
+          );
+          
+          const rotateZ = interpolate(
+            frame - wordDelay,
+            [0, 20],
+            [random(`word-rot-${i}`) * 40 - 20, 0],
+            { extrapolateRight: 'clamp' }
+          );
+
+          return (
+            <div
+              key={i}
+              style={{
+                transform: `scale(${scale}) translateX(${slideX}px) rotateZ(${rotateZ}deg)`,
+                opacity,
+                fontSize: 64,
+                fontWeight: 'bold',
+                color: '#FFFFFF',
+                textShadow: '0 0 20px rgba(255,255,255,0.5)',
+                filter: `blur(${Math.max(0, 10 - frame / 5)}px)`
+              }}
+            >
+              {word}
+            </div>
+          );
+        })}
       </div>
-      
-      {subtitle && (
-        <div style={{
-          opacity: interpolate(frame, [30, 60], [0, 1], { extrapolateRight: 'clamp' }),
-          fontSize: 32,
-          color: 'rgba(255,255,255,0.8)',
-          textAlign: 'center',
-          transform: 'perspective(1000px) rotateX(5deg)',
-          zIndex: 10
-        }}>
-          "Where Luxury Meets Love"
-        </div>
-      )}
     </AbsoluteFill>
   );
 };

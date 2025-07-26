@@ -5,79 +5,133 @@ const Scene2: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const features = {features} || [
-    { title: 'Neural Networks', description: 'AI-powered processing', emoji: '🧠', color: '#64C8FF' },
-    { title: 'Quantum Speed', description: 'Instant calculations', emoji: '⚡', color: '#FF6B9D' },
-    { title: 'Holographic UI', description: 'Next-gen interface', emoji: '🔮', color: '#9B59B6' }
+  const rawStats = [{"label":"Success Rate","value":89,"color":"#4361ee","suffix":"%"},{"label":"Elite Members","value":95,"color":"#f72585","suffix":"%"},{"label":"Perfect Matches","value":92,"color":"#4cc9f0","suffix":"%"}] || [
+    { label: 'Success Rate', value: 85, suffix: '%', color: '#4361ee' },
+    { label: 'Users', value: 12000, suffix: '+', color: '#f72585' },
+    { label: 'Rating', value: 4.8, suffix: '/5', color: '#4cc9f0' }
   ];
+  
+  // Ensure all stats have colors
+  const stats = rawStats.map((stat, index) => ({
+    ...stat,
+    color: stat.color || ['#4361ee', '#f72585', '#4cc9f0', '#4895ef', '#560bad'][index % 5],
+    suffix: stat.suffix || ''
+  }));
 
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at center, #0D1421 0%, #1A1A2E 50%, #16213E 100%)',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 60,
-      padding: 80
+      gap: 100
     }}>
-      {features.map((feature, index) => {
-        const delay = index * 20;
-        const cardScale = spring({
-          fps,
-          frame: frame - delay,
-          config: { damping: 200, stiffness: 150 }
-        });
+      {stats.map((stat, index) => {
+        const startFrame = index * 20;
+        const progress = interpolate(
+          frame - startFrame,
+          [0, 90],
+          [0, 1],
+          { extrapolateRight: 'clamp' }
+        );
         
-        const prismEffect = Math.sin((frame + index * 50) * 0.05) * 5;
+        const numericValue = typeof stat.value === 'string' 
+          ? parseFloat(stat.value.replace(/[^0-9.]/g, '')) || 80
+          : stat.value;
+          
+        const progressPercent = Math.min(numericValue, 100);
+        const radius = 80;
+        const circumference = 2 * Math.PI * radius;
+        const strokeDashoffset = circumference - (progressPercent / 100) * circumference * progress;
         
+        const pulse = 1 + Math.sin(frame / 15) * 0.03;
+        
+        const displayValue = typeof stat.value === 'string'
+          ? stat.value
+          : (numericValue < 10 
+            ? (numericValue * progress).toFixed(1)
+            : Math.floor(numericValue * progress).toLocaleString());
+
         return (
           <div
             key={index}
             style={{
-              transform: `scale(${cardScale}) translateY(${prismEffect}px)`,
-              opacity: interpolate(frame - delay, [0, 30], [0, 1]),
-              width: 280,
-              height: 350,
               position: 'relative',
-              borderRadius: 20,
-              background: 'linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(100,200,255,0.2) 50%, rgba(255,255,255,0.05) 100%)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              backdropFilter: 'blur(20px)',
-              boxShadow: '0 0 30px rgba(100,200,255,0.3), inset 0 0 50px rgba(255,255,255,0.1)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 20,
-              padding: 30
+              width: 250,
+              height: 250,
+              transform: `scale(${pulse})`,
+              opacity: interpolate(frame - startFrame, [0, 20], [0, 1])
             }}
           >
-            <div style={{
-              fontSize: 48,
-              marginBottom: 10,
-              filter: 'drop-shadow(0 0 10px #64C8FF)'
-            }}>
-              {feature.emoji || '⭐'}
-            </div>
+            {/* Background circle */}
+            <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 200 200"
+              style={{
+                position: 'absolute',
+                transform: 'rotate(-90deg)'
+              }}
+            >
+              <circle
+                cx="100"
+                cy="100"
+                r={radius}
+                fill="none"
+                stroke="rgba(30, 41, 59, 0.2)"
+                strokeWidth="12"
+              />
+            </svg>
             
-            <div style={{
-              fontSize: 24,
-              fontWeight: 'bold',
-              color: '#FFFFFF',
-              textAlign: 'center',
-              marginBottom: 10,
-              textShadow: '0 0 10px #64C8FF'
-            }}>
-              {feature.title}
-            </div>
+            {/* Progress circle */}
+            <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 200 200"
+              style={{
+                position: 'absolute',
+                transform: 'rotate(-90deg)'
+              }}
+            >
+              <circle
+                cx="100"
+                cy="100"
+                r={radius}
+                fill="none"
+                stroke={stat.color || '#4361ee'}
+                strokeWidth="12"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                style={{
+                  filter: `drop-shadow(0 0 10px ${stat.color || '#4361ee'})`
+                }}
+              />
+            </svg>
             
+            {/* Value display */}
             <div style={{
-              fontSize: 16,
-              color: 'rgba(255,255,255,0.8)',
-              textAlign: 'center',
-              lineHeight: 1.4
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center'
             }}>
-              {feature.description}
+              <div style={{
+                fontSize: 36,
+                fontWeight: 'bold',
+                color: '#1e293b',
+                marginBottom: 8
+              }}>
+                {displayValue}{stat.suffix || ''}
+              </div>
+              <div style={{
+                fontSize: 18,
+                color: '#475569',
+                fontWeight: '500'
+              }}>
+                {stat.label}
+              </div>
             </div>
           </div>
         );

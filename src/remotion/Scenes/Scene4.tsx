@@ -6,8 +6,8 @@ const Scene4: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const productName = "Elite Dating Experience";
-  const featuresList = ["Private Messaging","Video Calls","Background Checks","Premium Support"] || ['Premium Quality', 'Fast Performance', 'User Friendly'];
+  const productName = "BusinessPro Suite";
+  const featuresList = ["Intuitive Dashboard","Custom Reports","Mobile Integration"] || ['Premium Quality', 'Fast Performance', 'User Friendly'];
 
   // 3D rotation effect
   const rotationY = interpolate(frame, [0, 180], [0, 360]);
@@ -98,7 +98,7 @@ const Scene4: React.FC = () => {
         textShadow: '0 4px 20px rgba(0,0,0,0.5)',
         opacity: interpolate(frame, [0, 30], [0, 1])
       }}>
-        "Elite Dating Experience"
+        "BusinessPro Suite"
       </div>
       
       {/* Features list */}

@@ -30,7 +30,7 @@ export const GeneratedComp: React.FC = () => {
         <Audio src={staticFile('audio/effects/bubble-pop.mp3')} volume={0.4} />
       </Sequence>
       {/* Transition effect for fade */}
-      <Sequence from={745} durationInFrames={50}>
+      <Sequence from={765} durationInFrames={50}>
         <Audio src={staticFile('audio/effects/bubble-pop.mp3')} volume={0.4} />
       </Sequence>
       
@@ -58,14 +58,14 @@ export const GeneratedComp: React.FC = () => {
           timing={linearTiming({durationInFrames: 20})}
           presentation={wipe()}
         />
-        <TransitionSeries.Sequence durationInFrames={180}>
+        <TransitionSeries.Sequence durationInFrames={200}>
           <Scene4 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           timing={linearTiming({durationInFrames: 20})}
           presentation={fade()}
         />
-        <TransitionSeries.Sequence durationInFrames={190}>
+        <TransitionSeries.Sequence durationInFrames={170}>
           <Scene5 />
         </TransitionSeries.Sequence>
       </TransitionSeries>

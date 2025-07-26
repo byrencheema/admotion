@@ -1,71 +1,64 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, random } from 'remotion';
+import { useCurrentFrame, useVideoConfig, spring, AbsoluteFill } from 'remotion';
 
 const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
-  const title = "Love Meets Luxury";
-  const words = title.split(' ');
+  const title = "Streamline Your Workflow" || 'HELLO';
+  const text = title.toUpperCase();
 
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(circle at center, #2D1B69 0%, #11052C 100%)',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden'
+      justifyContent: 'center'
     }}>
       <div style={{
         display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        alignItems: 'center',
         gap: 20,
-        maxWidth: '80%'
+        flexWrap: 'wrap',
+        justifyContent: 'center'
       }}>
-        {words.map((word, i) => {
-          const wordDelay = i * 8;
+        {text.split('').map((char, i) => {
+          const delay = i * 8;
           const scale = spring({
+            frame: frame - delay,
             fps,
-            frame: frame - wordDelay,
-            config: { damping: 200, stiffness: 300 }
+            from: 0,
+            to: 1,
+            config: {
+              damping: 8,
+              mass: 0.3,
+              stiffness: 100
+            }
           });
-          
-          const slideX = interpolate(
-            frame - wordDelay,
-            [0, 20],
-            [random(`word-x-${i}`) * 200 - 100, 0],
-            { extrapolateRight: 'clamp' }
-          );
-          
-          const opacity = interpolate(
-            frame - wordDelay,
-            [0, 15, 120, 135],
-            [0, 1, 1, 0]
-          );
-          
-          const rotateZ = interpolate(
-            frame - wordDelay,
-            [0, 20],
-            [random(`word-rot-${i}`) * 40 - 20, 0],
-            { extrapolateRight: 'clamp' }
-          );
+
+          const colors = ['#1e3a8a', '#3b82f6', '#60a5fa', '#93c5fd', '#1e40af'];
+          const charColor = colors[i % colors.length];
 
           return (
             <div
               key={i}
               style={{
-                transform: `scale(${scale}) translateX(${slideX}px) rotateZ(${rotateZ}deg)`,
-                opacity,
-                fontSize: 64,
+                display: 'inline-block',
+                transform: `scale(${scale})`,
+                fontSize: 80,
                 fontWeight: 'bold',
-                color: '#FFFFFF',
-                textShadow: '0 0 20px rgba(255,255,255,0.5)',
-                filter: `blur(${Math.max(0, 10 - frame / 5)}px)`
+                color: 'white',
+                border: '6px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '50%',
+                width: 120,
+                height: 120,
+                lineHeight: '108px',
+                textAlign: 'center',
+                background: `linear-gradient(45deg, ${charColor}, ${charColor}dd)`,
+                boxShadow: `0 8px 25px rgba(59, 130, 246, 0.4), inset 0 0 20px rgba(255,255,255,0.1)`,
+                backdropFilter: 'blur(8px)'
               }}
             >
-              {word}
+              {char === ' ' ? '' : char}
             </div>
           );
         })}

@@ -5,7 +5,7 @@ const Scene3: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const featuresData = [{"title":"AI Matchmaking","description":"Advanced algorithm for perfect matches"},{"title":"Verified Profiles","description":"Elite verification process"},{"title":"Luxury Events","description":"Exclusive in-person gatherings"},{"title":"Concierge Service","description":"24/7 personal assistance"}] || [
+  const featuresData = [{"title":"Smart Automation","description":"AI-powered workflow optimization"},{"title":"Real-time Analytics","description":"Instant business insights"},{"title":"Team Collaboration","description":"Seamless project management"}] || [
     { title: 'Neural Networks', description: 'AI-powered processing', emoji: '🧠', color: '#64C8FF' },
     { title: 'Quantum Speed', description: 'Instant calculations', emoji: '⚡', color: '#FF6B9D' },
     { title: 'Holographic UI', description: 'Next-gen interface', emoji: '🔮', color: '#9B59B6' }

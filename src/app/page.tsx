@@ -10,104 +10,104 @@ import {
   VIDEO_WIDTH,
 } from "../../types/constants";
 import { GeneratedComp } from "../remotion/Generated/GeneratedComp";
+import { Button } from "../components/Button";
+import { Input } from "../components/Input";
 
 const Home: NextPage = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [isResetting, setIsResetting] = useState<boolean>(false);
+
+  const samplePrompts = [
+    "Create a luxury dating app promo with premium features",
+    "Tech startup product launch with futuristic design", 
+    "Gaming app announcement with epic visuals",
+    "Professional business app with clean modern style"
+  ];
 
   const generateVideo = async () => {
     if (!prompt.trim()) return;
     
-    console.log('🚀 Starting generation with prompt:', prompt);
     setIsGenerating(true);
     
     try {
-      console.log('📡 Sending request to AI...');
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
       });
       
-      console.log('📥 Received response, status:', response.status);
       const data = await response.json();
-      console.log('📄 Response data:', data);
       
       if (data.success) {
-        console.log('✅ Success! Generated component');
-        alert(data.message + ' The page will refresh to show your new video.');
-        // Refresh the page to load the new component
+        alert('Video generated! Refreshing page...');
         setTimeout(() => window.location.reload(), 1000);
       } else {
-        console.error('❌ Generation failed:', data.message);
         alert('Generation failed: ' + data.message);
       }
     } catch (error) {
-      console.error('💥 Generation failed:', error);
-      alert('Failed to generate video. Check console for details.');
+      alert('Failed to generate video. Please try again.');
     } finally {
       setIsGenerating(false);
-      console.log('🏁 Generation complete');
-    }
-  };
-
-  const resetVideo = async () => {
-    console.log('🔄 Starting reset...');
-    setIsResetting(true);
-    
-    try {
-      const response = await fetch('/api/reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        console.log('✅ Reset successful');
-        setPrompt("");
-        alert(data.message + ' The page will refresh.');
-        setTimeout(() => window.location.reload(), 1000);
-      } else {
-        console.error('❌ Reset failed:', data);
-        alert('Reset failed: ' + (data.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('💥 Reset failed:', error);
-      alert('Failed to reset. Check console for details.');
-    } finally {
-      setIsResetting(false);
     }
   };
 
   return (
-    <div>
-      <div className="max-w-screen-md m-auto mb-5">
-        <div className="mb-8 mt-16">
-          <h1 className="text-4xl font-bold mb-6 text-center">
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              AI Video Generator
-            </span>
-            <div className="text-lg text-gray-600 mt-2">Create stunning marketing videos with AI</div>
-          </h1>
-          {/* Sample Prompts */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-3 text-center">Try these sample prompts:</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {[
-                "Create a luxury dating app promo with premium features",
-                "Tech startup product launch with futuristic design", 
-                "Gaming app announcement with epic visuals",
-                "Professional business app with clean modern style",
-                "Health and fitness app with organic natural theme",
-                "AI-powered productivity tool with neon tech aesthetics"
-              ].map((samplePrompt, index) => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <img 
+            src="/images/admotionlogo.png" 
+            alt="Admotion" 
+            className="h-24 mx-auto mb-8"
+          />
+        </div>
+
+        {/* Two Column Layout - 50/50 Split */}
+        <div className="grid lg:grid-cols-2 gap-16 items-start">
+          {/* Left Column - Input & Prompts */}
+          <div className="space-y-8">
+            {/* Main Input */}
+            <div className="bg-white p-8 shadow-xl border border-gray-100">
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                    What video do you want to create?
+                  </h2>
+                  <p className="text-gray-600">
+                    Describe your product, service, or idea
+                  </p>
+                </div>
+                
+                <Input
+                  value={prompt}
+                  onChange={setPrompt}
+                  placeholder="e.g., Create a luxury dating app promo with premium features..."
+                  multiline
+                  rows={4}
+                  disabled={isGenerating}
+                />
+
+                <Button
+                  onClick={generateVideo}
+                  disabled={isGenerating || !prompt.trim()}
+                  loading={isGenerating}
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                >
+                  {isGenerating ? 'Generating...' : '✨ Generate Video'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Sample Prompts */}
+            <div className="grid grid-cols-1 gap-4">
+              {samplePrompts.map((samplePrompt, index) => (
                 <button
                   key={index}
                   onClick={() => setPrompt(samplePrompt)}
-                  className="p-3 text-left bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-sm transition-colors"
-                  disabled={isGenerating || isResetting}
+                  disabled={isGenerating}
+                  className="p-4 text-left bg-white hover:bg-gray-50 border border-gray-200 text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 hover:text-gray-900 shadow-sm hover:shadow-md"
                 >
                   {samplePrompt}
                 </button>
@@ -115,58 +115,23 @@ const Home: NextPage = () => {
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Or write your own prompt..."
-              className="flex-1 p-4 border border-gray-300 bg-white rounded-lg resize-none h-24 text-gray-900"
-              disabled={isGenerating || isResetting}
+          {/* Right Column - Video Player (Half Screen) */}
+          <div className="bg-gray-900">
+            <Player
+              component={GeneratedComp}
+              inputProps={{}}
+              durationInFrames={DURATION_IN_FRAMES}
+              fps={VIDEO_FPS}
+              compositionHeight={VIDEO_HEIGHT}
+              compositionWidth={VIDEO_WIDTH}
+              style={{ 
+                width: "100%",
+                backgroundColor: "transparent"
+              }}
+              controls
+              loop
+              acknowledgeRemotionLicense
             />
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={generateVideo}
-                disabled={isGenerating || isResetting || !prompt.trim()}
-                className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              >
-                {isGenerating ? '🤖 Generating...' : '✨ Generate Video'}
-              </button>
-              <button
-                onClick={resetVideo}
-                disabled={isGenerating || isResetting}
-                className="px-8 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isResetting ? '🔄 Resetting...' : '🗑️ Reset'}
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="overflow-hidden rounded-geist shadow-[0_0_200px_rgba(0,0,0,0.15)] mb-10">
-          <Player
-            component={GeneratedComp}
-            inputProps={{}}
-            durationInFrames={DURATION_IN_FRAMES}
-            fps={VIDEO_FPS}
-            compositionHeight={VIDEO_HEIGHT}
-            compositionWidth={VIDEO_WIDTH}
-            style={{
-              width: "100%",
-            }}
-            controls
-            autoPlay
-            loop
-            acknowledgeRemotionLicense
-          />
-        </div>
-        
-        
-        <div className="text-center text-gray-600 mt-8">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-100">
-            <h3 className="font-semibold text-lg mb-3 text-gray-800">✨ AI-Powered Video Templates</h3>
-            <p className="text-sm text-gray-600">
-              Our AI automatically selects from <strong>17+ advanced templates</strong> including:
-              Kinetic Typography • 3D Product Showcases • Holographic Cards • Neon Effects • Animated Charts • Bubble Text • Retro Synthwave
-            </p>
           </div>
         </div>
       </div>

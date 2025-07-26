@@ -3,139 +3,157 @@ import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } fr
 
 const Scene2: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
 
-  const rawStats = [{"label":"Success Rate","value":89,"color":"#4361ee","suffix":"%"},{"label":"Elite Members","value":95,"color":"#f72585","suffix":"%"},{"label":"Perfect Matches","value":92,"color":"#4cc9f0","suffix":"%"}] || [
-    { label: 'Success Rate', value: 85, suffix: '%', color: '#4361ee' },
-    { label: 'Users', value: 12000, suffix: '+', color: '#f72585' },
-    { label: 'Rating', value: 4.8, suffix: '/5', color: '#4cc9f0' }
+  const statsData = [{"label":"Productivity Increase","value":85,"color":"#4361ee","suffix":"%"},{"label":"Time Saved","value":65,"color":"#f72585","suffix":"%"},{"label":"Team Efficiency","value":92,"color":"#4cc9f0","suffix":"%"}] || [
+    { label: 'Jan', value: 50 },
+    { label: 'Feb', value: 80 },
+    { label: 'Mar', value: 30 },
+    { label: 'Apr', value: 70 },
+    { label: 'May', value: 90 }
   ];
-  
-  // Ensure all stats have colors
-  const stats = rawStats.map((stat, index) => ({
-    ...stat,
-    color: stat.color || ['#4361ee', '#f72585', '#4cc9f0', '#4895ef', '#560bad'][index % 5],
-    suffix: stat.suffix || ''
-  }));
+
+  const colors = [
+    '#4361ee', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0',
+    '#4895ef', '#560bad', '#b5179e', '#f15bb5', '#00b4d8'
+  ];
+
+  const chartWidth = 900;
+  const chartHeight = 500;
+  const padding = 60;
+
+  const xScale = (x) => (x / (statsData.length - 1)) * (chartWidth - padding * 2) + padding;
+  const yScale = (y) => chartHeight - padding - (y / 100) * (chartHeight - padding * 2);
+  const barWidth = ((chartWidth - padding * 2) / statsData.length) * 0.7;
+
+  const titleOpacity = interpolate(frame, [0, 30], [0, 1], { extrapolateRight: 'clamp' });
 
   return (
     <AbsoluteFill style={{
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
+      background: 'linear-gradient(to bottom right, #111827, #1f2937)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 100
+      fontFamily: 'Inter, system-ui, sans-serif'
     }}>
-      {stats.map((stat, index) => {
-        const startFrame = index * 20;
-        const progress = interpolate(
-          frame - startFrame,
-          [0, 90],
-          [0, 1],
-          { extrapolateRight: 'clamp' }
-        );
-        
-        const numericValue = typeof stat.value === 'string' 
-          ? parseFloat(stat.value.replace(/[^0-9.]/g, '')) || 80
-          : stat.value;
+      <div style={{
+        position: 'relative',
+        width: chartWidth,
+        height: chartHeight,
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        borderRadius: 16,
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+        overflow: 'hidden',
+        padding: 20
+      }}>
+        <svg width={chartWidth} height={chartHeight}>
+          <defs>
+            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" floodOpacity="0.3" />
+            </filter>
+          </defs>
           
-        const progressPercent = Math.min(numericValue, 100);
-        const radius = 80;
-        const circumference = 2 * Math.PI * radius;
-        const strokeDashoffset = circumference - (progressPercent / 100) * circumference * progress;
-        
-        const pulse = 1 + Math.sin(frame / 15) * 0.03;
-        
-        const displayValue = typeof stat.value === 'string'
-          ? stat.value
-          : (numericValue < 10 
-            ? (numericValue * progress).toFixed(1)
-            : Math.floor(numericValue * progress).toLocaleString());
+          {/* X-axis line */}
+          <line
+            x1={padding}
+            y1={chartHeight - padding}
+            x2={chartWidth - padding}
+            y2={chartHeight - padding}
+            stroke="rgba(255, 255, 255, 0.2)"
+            strokeWidth="2"
+          />
 
-        return (
-          <div
-            key={index}
-            style={{
-              position: 'relative',
-              width: 250,
-              height: 250,
-              transform: `scale(${pulse})`,
-              opacity: interpolate(frame - startFrame, [0, 20], [0, 1])
-            }}
-          >
-            {/* Background circle */}
-            <svg
-              width="100%"
-              height="100%"
-              viewBox="0 0 200 200"
-              style={{
-                position: 'absolute',
-                transform: 'rotate(-90deg)'
-              }}
+          {/* X-axis labels */}
+          {statsData.map((point, i) => (
+            <text
+              key={`x-label-${i}`}
+              x={xScale(i)}
+              y={chartHeight - padding + 25}
+              textAnchor="middle"
+              fill="rgba(255, 255, 255, 0.8)"
+              fontSize="14"
+              fontWeight="500"
             >
-              <circle
-                cx="100"
-                cy="100"
-                r={radius}
-                fill="none"
-                stroke="rgba(30, 41, 59, 0.2)"
-                strokeWidth="12"
-              />
-            </svg>
+              {point.label}
+            </text>
+          ))}
+
+          {/* Animated bars */}
+          {statsData.map((point, i) => {
+            const numericValue = typeof point.value === 'string' 
+              ? parseFloat(point.value.replace(/[^0-9.]/g, '')) || 50
+              : point.value;
+              
+            const barHeight = (numericValue / 100) * (chartHeight - padding * 2);
             
-            {/* Progress circle */}
-            <svg
-              width="100%"
-              height="100%"
-              viewBox="0 0 200 200"
-              style={{
-                position: 'absolute',
-                transform: 'rotate(-90deg)'
-              }}
-            >
-              <circle
-                cx="100"
-                cy="100"
-                r={radius}
-                fill="none"
-                stroke={stat.color || '#4361ee'}
-                strokeWidth="12"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                style={{
-                  filter: `drop-shadow(0 0 10px ${stat.color || '#4361ee'})`
-                }}
-              />
-            </svg>
-            
-            {/* Value display */}
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: 36,
-                fontWeight: 'bold',
-                color: '#1e293b',
-                marginBottom: 8
-              }}>
-                {displayValue}{stat.suffix || ''}
-              </div>
-              <div style={{
-                fontSize: 18,
-                color: '#475569',
-                fontWeight: '500'
-              }}>
-                {stat.label}
-              </div>
-            </div>
-          </div>
-        );
-      })}
+            const barProgress = interpolate(
+              frame,
+              [i * 5, 20 + i * 5],
+              [0, 1],
+              { extrapolateRight: 'clamp' }
+            );
+
+            const currentHeight = barHeight * barProgress;
+            const currentY = chartHeight - padding - currentHeight;
+
+            return (
+              <g key={`bar-${i}`}>
+                <rect
+                  x={xScale(i) - barWidth / 2}
+                  y={currentY}
+                  width={barWidth}
+                  height={currentHeight}
+                  fill={colors[i % colors.length]}
+                  rx="6"
+                  ry="6"
+                  filter="url(#shadow)"
+                />
+                <text
+                  x={xScale(i)}
+                  y={currentY - 10}
+                  textAnchor="middle"
+                  fill="white"
+                  fontSize="14"
+                  fontWeight="bold"
+                  opacity={barProgress > 0.9 ? 1 : 0}
+                >
+                  {typeof point.value === 'string' ? point.value : numericValue}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Chart title */}
+        <div style={{
+          position: 'absolute',
+          top: 25,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: 28,
+          fontWeight: 'bold',
+          color: 'white',
+          textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+          letterSpacing: '-0.5px',
+          opacity: titleOpacity
+        }}>
+          Performance Analytics
+        </div>
+
+        {/* Chart subtitle */}
+        <div style={{
+          position: 'absolute',
+          top: 60,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: 16,
+          color: 'rgba(255, 255, 255, 0.7)',
+          textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+          opacity: titleOpacity
+        }}>
+          Data visualization dashboard
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };

@@ -6,7 +6,7 @@ const Scene2: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const features = [{"title":"Professional Design","description":"Elevate your brand with premium visuals"},{"title":"Dynamic Effects","description":"Engage viewers with stunning animations"},{"title":"Custom Branding","description":"Showcase your unique identity"}] || [
+  const features = [{"title":"Professional Design","description":"Elevate your brand with stunning visuals"},{"title":"Dynamic Effects","description":"Engage viewers with motion and style"},{"title":"Custom Branding","description":"Perfect alignment with your identity"}] || [
     { title: 'Feature 1', description: 'Amazing capability', color: '#FF6B6B' },
     { title: 'Feature 2', description: 'Powerful tool', color: '#4ECDC4' },
     { title: 'Feature 3', description: 'Easy to use', color: '#FFE66D' }

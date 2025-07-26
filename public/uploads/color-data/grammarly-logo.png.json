@@ -1,0 +1,94 @@
+{
+  "dominantColors": [
+    {
+      "hex": "#eff2f1",
+      "rgb": [
+        239,
+        242,
+        241
+      ],
+      "hsl": [
+        160,
+        0.10344827586206856,
+        0.9431372549019608
+      ],
+      "frequency": 0.9323723228995058,
+      "luminance": 0.8820585745448258,
+      "temperature": "neutral",
+      "saturation": "muted"
+    },
+    {
+      "hex": "#ffffff",
+      "rgb": [
+        255,
+        255,
+        255
+      ],
+      "hsl": [
+        0,
+        0,
+        1
+      ],
+      "frequency": 0.9310543657331136,
+      "luminance": 1,
+      "temperature": "neutral",
+      "saturation": "grayscale"
+    }
+  ],
+  "primaryColor": {
+    "hex": "#eff2f1",
+    "rgb": [
+      239,
+      242,
+      241
+    ],
+    "hsl": [
+      160,
+      0.10344827586206856,
+      0.9431372549019608
+    ],
+    "frequency": 0.9323723228995058,
+    "luminance": 0.8820585745448258,
+    "temperature": "neutral",
+    "saturation": "muted"
+  },
+  "accentColor": {
+    "hex": "#ffffff",
+    "rgb": [
+      255,
+      255,
+      255
+    ],
+    "hsl": [
+      0,
+      0,
+      1
+    ],
+    "frequency": 0.9310543657331136,
+    "luminance": 1,
+    "temperature": "neutral",
+    "saturation": "grayscale"
+  },
+  "backgroundColor": {
+    "hex": "#eff2f1",
+    "rgb": [
+      239,
+      242,
+      241
+    ],
+    "hsl": [
+      160,
+      0.10344827586206856,
+      0.9431372549019608
+    ],
+    "frequency": 0.9323723228995058,
+    "luminance": 0.8820585745448258,
+    "temperature": "neutral",
+    "saturation": "muted"
+  },
+  "colorHarmony": "analogous",
+  "overallMood": "calm",
+  "brandSuitability": "healthcare",
+  "contrastLevel": "low",
+  "colorStory": "This image features balanced and neutral tones with a harmonious and flowing color palette. The calm mood is established through muted colors with low contrast levels, making it ideal for healthcare branding."
+}

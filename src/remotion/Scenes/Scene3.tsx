@@ -1,103 +1,129 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, staticFile, Img } from 'remotion';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } from 'remotion';
 
-const Scene3: React.FC<{ productName: string; features: string[]; images?: string[] }> = ({ 
-  productName, 
-  features = [], 
-  images = [] 
-}) => {
+const Scene3: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
-  const productImage = images.find(img => img.includes('product')) || images[0];
-  
-  const slideIn = spring({
+  const stats = [{"label":"Engagement Rate","value":"85%"},{"label":"Brand Recognition","value":"3x"},{"label":"Conversion Rate","value":"45%"}] || [
+    { label: 'Users', value: 50000, suffix: '+', color: '#FF6B6B' },
+    { label: 'Downloads', value: 100000, suffix: '+', color: '#4ECDC4' },
+    { label: 'Rating', value: 4.9, suffix: '/5', color: '#FFE66D' }
+  ];
+
+  const containerScale = spring({
     fps,
-    frame: frame - 30,
-    config: { damping: 200, stiffness: 100 }
-  });
-
-  const imageScale = interpolate(frame, [0, 60], [1.2, 1], {
-    extrapolateRight: 'clamp'
+    frame,
+    config: { damping: 200, stiffness: 200 }
   });
 
   return (
     <AbsoluteFill style={{
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-      padding: '60px'
+      background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 80
     }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%',
-        height: '100%'
-      }}>
-        {/* Product Image */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          {productImage && (
-            <div style={{
-              transform: `scale(${imageScale})`,
-              borderRadius: '20px',
-              overflow: 'hidden',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-              maxWidth: '400px',
-              maxHeight: '400px'
-            }}>
-              <Img
-                src={staticFile(productImage.replace('/uploads', 'uploads'))}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
-                }}
-              />
-            </div>
-          )}
-        </div>
+      {stats.map((stat, index) => {
+        const startFrame = index * 30;
+        const progress = interpolate(
+          frame - startFrame,
+          [0, 90],
+          [0, 1],
+          { extrapolateRight: 'clamp' }
+        );
+        
+        const countValue = interpolate(
+          progress,
+          [0, 1],
+          [0, stat.value],
+          { extrapolateRight: 'clamp' }
+        );
+        
+        const scaleEffect = spring({
+          fps,
+          frame: frame - startFrame,
+          config: { damping: 200, stiffness: 300 }
+        });
+        
+        const displayValue = stat.value < 10 
+          ? countValue.toFixed(1)
+          : Math.floor(countValue).toLocaleString();
 
-        {/* Content */}
-        <div style={{
-          flex: 1,
-          paddingLeft: '60px',  
-          transform: `translateX(${interpolate(slideIn, [0, 1], [100, 0])}px)`
-        }}>
-          <h1 style={{
-            fontSize: 54,
-            fontWeight: '900',
-            color: '#1e293b',
-            marginBottom: '30px',
-            lineHeight: 1.2,
-            opacity: interpolate(frame, [30, 60], [0, 1], { extrapolateRight: 'clamp' })
-          }}>
-            {productName}
-          </h1>
-          
-          <div style={{
-            opacity: interpolate(frame, [60, 90], [0, 1], { extrapolateRight: 'clamp' })
-          }}>
-            {features.slice(0, 3).map((feature, index) => (
-              <div
-                key={index}
-                style={{
+        return (
+          <div
+            key={index}
+            style={{
+              transform: `scale(${scaleEffect})`,
+              opacity: interpolate(frame - startFrame, [0, 20], [0, 1]),
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 20
+            }}
+          >
+            {/* Progress ring */}
+            <div style={{
+              position: 'relative',
+              width: 120,
+              height: 120
+            }}>
+              <svg width={120} height={120} style={{ transform: 'rotate(-90deg)' }}>
+                <circle
+                  cx={60}
+                  cy={60}
+                  r={50}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.2)"
+                  strokeWidth={8}
+                />
+                <circle
+                  cx={60}
+                  cy={60}
+                  r={50}
+                  fill="none"
+                  stroke={stat.color}
+                  strokeWidth={8}
+                  strokeDasharray={`${314 * progress} 314`}
+                  strokeLinecap="round"
+                  style={{
+                    filter: `drop-shadow(0 0 10px ${stat.color})`
+                  }}
+                />
+              </svg>
+              
+              {/* Counter display */}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                textAlign: 'center'
+              }}>
+                <div style={{
                   fontSize: 24,
-                  color: '#475569',
-                  marginBottom: '20px',
-                  opacity: interpolate(frame, [90 + index * 20, 120 + index * 20], [0, 1], { extrapolateRight: 'clamp' }),
-                  transform: `translateX(${interpolate(frame, [90 + index * 20, 120 + index * 20], [30, 0])}px)`
-                }}
-              >
-                ✨ {feature}
+                  fontWeight: 'bold',
+                  color: stat.color,
+                  textShadow: `0 0 10px ${stat.color}`
+                }}>
+                  {displayValue}{stat.suffix}
+                </div>
               </div>
-            ))}
+            </div>
+            
+            {/* Label */}
+            <div style={{
+              fontSize: 22,
+              color: 'white',
+              fontWeight: 'bold',
+              textAlign: 'center'
+            }}>
+              {stat.label}
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })}
     </AbsoluteFill>
   );
 };

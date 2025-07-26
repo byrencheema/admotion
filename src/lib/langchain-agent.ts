@@ -1,5 +1,5 @@
-import { ChatOpenAI } from "@langchain/openai";
-import { AgentExecutor, createOpenAIFunctionsAgent } from "langchain/agents";
+import { ChatAnthropic } from "@langchain/anthropic";
+import { AgentExecutor, createToolCallingAgent } from "langchain/agents";
 import { DynamicTool } from "@langchain/core/tools";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 
@@ -172,10 +172,10 @@ export const GeneratedComp: React.FC = () => {
 
 // Create the LangChain agent
 export async function createRemotionAgent() {
-  const model = new ChatOpenAI({
-    modelName: "gpt-4",
+  const model = new ChatAnthropic({
+    model: "claude-3-haiku-20240307", // Using cheaper Claude model
     temperature: 0.7,
-    openAIApiKey: process.env.OPENAI_API_KEY,
+    anthropicApiKey: process.env.ANTHROPIC_API_KEY,
   });
 
   const tools = [generateRemotionComponentTool, validateCodeTool];
@@ -204,7 +204,7 @@ Always ensure:
     ["placeholder", "{agent_scratchpad}"],
   ]);
 
-  const agent = await createOpenAIFunctionsAgent({
+  const agent = await createToolCallingAgent({
     llm: model,
     tools,
     prompt,

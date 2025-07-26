@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateGeneratedComponent } from '../../../lib/dynamic-component';
-import { OpenAI } from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
 export async function POST(request: NextRequest) {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🧠 API: Generating component with OpenAI...');
+    console.log('🧠 API: Generating component with Claude...');
     
     const systemPrompt = `You are a world-class marketing video expert specializing in creating stunning, conversion-focused, professional marketing videos using Remotion. Create components that drive engagement, build brand awareness, and convert viewers into customers.
 
@@ -110,17 +110,20 @@ export const GeneratedComp: React.FC = () => {
   );
 };`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: `Create a professional marketing video component for: "${prompt}". Focus on brand impact, conversion optimization, and social media engagement with polished animations and marketing-appropriate visual effects!` }
-      ],
-      temperature: 0.7,
+    const message = await anthropic.messages.create({
+      model: "claude-3-haiku-20240307", // Using cheaper Claude model
       max_tokens: 2000,
+      temperature: 0.7,
+      system: systemPrompt,
+      messages: [
+        { 
+          role: "user", 
+          content: `Create a professional marketing video component for: "${prompt}". Focus on brand impact, conversion optimization, and social media engagement with polished animations and marketing-appropriate visual effects!`
+        }
+      ],
     });
 
-    const componentCode = completion.choices[0]?.message?.content?.trim() || '';
+    const componentCode = message.content[0]?.type === 'text' ? message.content[0].text.trim() : '';
     console.log('🤖 API: Generated component code:', componentCode);
     
     if (componentCode) {

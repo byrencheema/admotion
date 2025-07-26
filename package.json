@@ -2,13 +2,15 @@
   "name": "admotion",
   "version": "1.0.0",
   "private": true,
-  "description": "AI-powered marketing video generator using Remotion and GPT-4",
+  "description": "AI-powered marketing video generator using Remotion and LLM technology",
   "author": {
     "name": "Mohit Yadav",
     "email": "mohit@mohitya.dev",
     "url": "https://mohitya.dev"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.57.0",
+    "@langchain/anthropic": "^0.3.24",
     "@langchain/community": "^0.3.49",
     "@langchain/core": "^0.3.66",
     "@langchain/openai": "^0.6.3",

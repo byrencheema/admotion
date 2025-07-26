@@ -2,7 +2,7 @@
 
 ## Overview
 
-**✅ COMPLETED SYSTEM**: Admotion is a fully functional AI-powered marketing video generator that creates professional-quality Remotion videos from natural language prompts using GPT-4.
+**✅ COMPLETED SYSTEM**: Admotion is a fully functional AI-powered marketing video generator that creates professional-quality Remotion videos from natural language prompts using advanced LLM technology.
 
 ## Status: **PRODUCTION READY** 🚀
 
@@ -11,7 +11,7 @@ The system successfully generates broadcast-quality videos with advanced animati
 ## Phase 1: Basic MVP ✅ COMPLETED
 
 ### ✅ Foundation (DONE)
-- ✅ OpenAI GPT-4 integration with enhanced prompts
+- ✅ LLM integration with enhanced prompts
 - ✅ `/api/generate` endpoint with professional system prompt
 - ✅ Dynamic component generation and file system updates
 - ✅ Real-time video preview with auto-refresh
@@ -46,7 +46,7 @@ The system successfully generates broadcast-quality videos with advanced animati
 ### Architecture Overview
 
 ```
-User Prompt → LangChain Agent → [Tools: CodeGen, Validate, Preview] → Dynamic Remotion Component → Video Render
+User Prompt → LangChain Agent (LLM) → [Tools: CodeGen, Validate, Preview] → Dynamic Remotion Component → Video Render
 ```
 
 ## Phase 2 Implementation Plan
@@ -180,8 +180,8 @@ const loadGeneratedComponent = async (code: string) => {
 ### 4.1 LangChain Agent Configuration
 ```typescript
 const agent = new AgentExecutor({
-  agent: new ChatOpenAI({
-    modelName: "gpt-4",
+  agent: new ChatLLM({
+    model: "claude-3-haiku-20240307", // or any other supported model
     temperature: 0.7,
   }),
   tools: [
@@ -257,7 +257,7 @@ src/
 ## Environment Variables Needed
 
 ```env
-OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_api_key # or appropriate key for your LLM provider
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
 LANGCHAIN_API_KEY=your_langchain_key

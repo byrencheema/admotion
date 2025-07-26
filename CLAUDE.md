@@ -82,12 +82,13 @@ The project uses Remotion Lambda for cloud video rendering:
 3. Test locally before deploying to Lambda
 4. Run `pnpm run deploy` after changes to update Lambda bundle
 
-## Future LLM Agent Integration
+## LLM Agent Integration
 
-The project has documentation for planned LangChain integration (`docs/llm-agent-plan.md`) to generate Remotion code from natural language prompts. This would add:
-- LangChain agent for code generation
+The project includes LangChain integration (`docs/llm-agent-plan.md`) to generate Remotion code from natural language prompts. This adds:
+- LangChain agent for code generation using Claude API
 - Dynamic component loading
 - AI-powered video creation from text descriptions
+- Support for multiple LLM providers (currently using Claude)
 
 ## Important Files
 

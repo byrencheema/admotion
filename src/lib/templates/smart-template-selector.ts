@@ -187,9 +187,12 @@ export class SmartTemplateSelector {
   /**
    * Generates contextual props based on prompt and template
    */
-  generateContextualProps(prompt: string, templateId: string, analysis: ContentAnalysis): Record<string, unknown> {
+  async generateContextualProps(prompt: string, templateId: string, analysis: ContentAnalysis): Promise<Record<string, unknown>> {
     const template = SCENE_TEMPLATES.find(t => t.id === templateId);
     if (!template) return {};
+    
+    // Try to get contextual information from Senso for more accurate props
+    const contextualInfo = await this.getContextualInfo(prompt);
     
     const props: Record<string, unknown> = {};
     
@@ -202,13 +205,13 @@ export class SmartTemplateSelector {
     template.requiredProps.forEach(prop => {
       switch (prop) {
         case 'title':
-          props.title = this.generateTitle(prompt, analysis);
+          props.title = this.generateTitle(prompt, analysis, contextualInfo);
           break;
         case 'subtitle':
-          props.subtitle = this.generateSubtitle(prompt, analysis);
+          props.subtitle = this.generateSubtitle(prompt, analysis, contextualInfo);
           break;
         case 'mainText':
-          props.mainText = this.generateMainText(prompt, analysis);
+          props.mainText = this.generateMainText(prompt, analysis, contextualInfo);
           break;
         case 'buttonText':
           props.buttonText = this.generateButtonText(analysis);
@@ -251,8 +254,25 @@ export class SmartTemplateSelector {
     return null;
   }
   
-  private generateTitle(prompt: string, analysis: ContentAnalysis): string {
+  private generateTitle(prompt: string, analysis: ContentAnalysis, contextualInfo?: string | null): string {
     const maxLength = 40;
+    
+    // If we have contextual info, try to extract a more relevant title
+    if (contextualInfo) {
+      const lines = contextualInfo.split('\n');
+      const titleLine = lines.find(line => 
+        line.toLowerCase().includes('title') || 
+        line.toLowerCase().includes('name') ||
+        line.toLowerCase().includes('product')
+      );
+      if (titleLine) {
+        const extractedTitle = titleLine.replace(/^[^:]*:?\s*/, '').trim();
+        if (extractedTitle && extractedTitle.length <= maxLength) {
+          return extractedTitle;
+        }
+      }
+    }
+    
     let title = prompt.length > maxLength ? prompt.substring(0, maxLength) + '...' : prompt;
     
     // Make it more engaging based on tone
@@ -268,7 +288,23 @@ export class SmartTemplateSelector {
     }
   }
   
-  private generateSubtitle(prompt: string, analysis: ContentAnalysis): string {
+  private generateSubtitle(prompt: string, analysis: ContentAnalysis, contextualInfo?: string | null): string {
+    // If we have contextual info, try to extract a tagline or key benefit
+    if (contextualInfo) {
+      const lines = contextualInfo.split('\n');
+      const subtitleLine = lines.find(line => 
+        line.toLowerCase().includes('tagline') || 
+        line.toLowerCase().includes('benefit') ||
+        line.toLowerCase().includes('value proposition')
+      );
+      if (subtitleLine) {
+        const extractedSubtitle = subtitleLine.replace(/^[^:]*:?\s*/, '').trim();
+        if (extractedSubtitle && extractedSubtitle.length <= 60) {
+          return extractedSubtitle;
+        }
+      }
+    }
+    
     const subtitles = {
       tech: 'Powered by Innovation',
       luxury: 'Experience Excellence',
@@ -281,7 +317,23 @@ export class SmartTemplateSelector {
     return subtitles[analysis.tone] || 'Discover the Difference';
   }
   
-  private generateMainText(prompt: string, analysis: ContentAnalysis): string {
+  private generateMainText(prompt: string, analysis: ContentAnalysis, contextualInfo?: string | null): string {
+    // If we have contextual info, try to extract a compelling CTA message
+    if (contextualInfo) {
+      const lines = contextualInfo.split('\n');
+      const ctaLine = lines.find(line => 
+        line.toLowerCase().includes('call to action') || 
+        line.toLowerCase().includes('cta') ||
+        line.toLowerCase().includes('ready to')
+      );
+      if (ctaLine) {
+        const extractedCta = ctaLine.replace(/^[^:]*:?\s*/, '').trim();
+        if (extractedCta && extractedCta.length <= 50) {
+          return extractedCta;
+        }
+      }
+    }
+    
     const ctaTexts = {
       tech: 'Ready to Innovate?',
       luxury: 'Experience Luxury Today',
@@ -361,5 +413,39 @@ export class SmartTemplateSelector {
     ];
     
     return statSets[analysis.industry as keyof typeof statSets] || defaultStats;
+  }
+
+  private async getContextualInfo(prompt: string): Promise<string | null> {
+    try {
+      console.log('🔍 Smart Selector: Fetching contextual info from Senso for:', prompt);
+      
+      // Use the GET endpoint to get relevant context
+      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '';
+      const params = new URLSearchParams({
+        query: prompt,
+        generatePrompt: 'Extract specific details about features, benefits, brand values, and key messaging that would be useful for creating marketing content.',
+        maxResults: '2'
+      });
+      
+      console.log('🔍 Smart Selector: Making request to /api/generate with params:', params.toString());
+      const response = await fetch(`${baseUrl}/api/generate?${params}`);
+      
+      if (!response.ok) {
+        console.log('🔍 Smart Selector: API response not OK, status:', response.status);
+        console.log('🔍 Smart Selector: No contextual info available from Senso');
+        return null;
+      }
+      
+      const data = await response.json();
+      console.log('🔍 Smart Selector: API response received');
+      console.log('🔍 Smart Selector: Context length:', data.output?.length || 0, 'characters');
+      console.log('🔍 Smart Selector: Context preview:', data.output?.substring(0, 150) + '...');
+      console.log('🔍 Smart Selector: Sources used:', data.sources?.length || 0, 'sources');
+      
+      return data.output || null;
+    } catch (error) {
+      console.log('🔍 Smart Selector: Error fetching contextual info, continuing without:', error);
+      return null;
+    }
   }
 }

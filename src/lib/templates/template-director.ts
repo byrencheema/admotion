@@ -38,6 +38,9 @@ export class TemplateDirectorAgent {
   async planTemplateVideo(prompt: string): Promise<TemplateVideoStructure> {
     console.log('🎬 Template Director: Planning video structure for prompt:', prompt);
 
+    // Get contextual information from Senso if available
+    const contextualInfo = await this.getContextualInfo(prompt);
+
     const availableTemplates = SCENE_TEMPLATES.map(t => ({
       id: t.id,
       name: t.name,
@@ -128,6 +131,13 @@ JSON Format:
             content: `Create a visually stunning 30-second marketing video for: "${prompt}". 
             
 ${this.generateSmartGuidance(prompt)}
+
+${contextualInfo ? `
+CONTEXTUAL INFORMATION FROM KNOWLEDGE BASE:
+${contextualInfo}
+
+Use this context to create more accurate and relevant content for titles, subtitles, features, and descriptions.
+` : ''}
             
 SELECTION CRITERIA:
 1. Choose templates that create visual variety and engagement
@@ -153,7 +163,7 @@ Prioritize advanced templates for maximum visual impact.`
         console.log('🎬 Template Director: Successfully parsed template structure');
       } catch (parseError) {
         console.error('🎬 Template Director: Failed to parse JSON:', parseError);
-        videoStructure = this.createSmartFallbackStructure(prompt);
+        videoStructure = await this.createSmartFallbackStructure(prompt);
       }
 
       // Validate template structure
@@ -164,7 +174,41 @@ Prioritize advanced templates for maximum visual impact.`
 
     } catch (error) {
       console.error('🎬 Template Director: Error planning template structure:', error);
-      return this.createSmartFallbackStructure(prompt);
+      return await this.createSmartFallbackStructure(prompt);
+    }
+  }
+
+  private async getContextualInfo(prompt: string): Promise<string | null> {
+    try {
+      console.log('🔍 Template Director: Fetching contextual info from Senso for:', prompt);
+      
+      // Use the GET endpoint to get relevant context
+      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '';
+      const params = new URLSearchParams({
+        query: prompt,
+        generatePrompt: 'Extract key information, features, benefits, and messaging points relevant to creating marketing video content. Include brand name and unique features of product.',
+        maxResults: '3'
+      });
+      
+      console.log('🔍 Template Director: Making request to /api/generate with params:', params.toString());
+      const response = await fetch(`${baseUrl}/api/generate?${params}`);
+      
+      if (!response.ok) {
+        console.log('🔍 Template Director: API response not OK, status:', response.status);
+        console.log('🔍 Template Director: No contextual info available from Senso');
+        return null;
+      }
+      
+      const data = await response.json();
+      console.log('🔍 Template Director: API response received');
+      console.log('🔍 Template Director: Context length:', data.output?.length || 0, 'characters');
+      console.log('🔍 Template Director: Context preview:', data.output?.substring(0, 150) + '...');
+      console.log('🔍 Template Director: Sources used:', data.sources?.length || 0, 'sources');
+      
+      return data.output || null;
+    } catch (error) {
+      console.log('🔍 Template Director: Error fetching contextual info, continuing without:', error);
+      return null;
     }
   }
   
@@ -181,22 +225,24 @@ Prioritize advanced templates for maximum visual impact.`
 - Suggested Flow: ${analysis.suggestedFlow.join(' → ')}`;
   }
   
-  private createSmartFallbackStructure(prompt: string): TemplateVideoStructure {
+  private async createSmartFallbackStructure(prompt: string): Promise<TemplateVideoStructure> {
     const analysis = this.smartSelector.analyzeContent(prompt);
     const recommendedTemplates = this.smartSelector.selectOptimalTemplates(analysis, 5);
     
     console.log('🎬 Using smart fallback with templates:', recommendedTemplates);
     
-    const scenes: TemplateScene[] = recommendedTemplates.map((templateId, index) => {
-      const props = this.smartSelector.generateContextualProps(prompt, templateId, analysis);
+    const scenes: TemplateScene[] = [];
+    for (let index = 0; index < recommendedTemplates.length; index++) {
+      const templateId = recommendedTemplates[index];
+      const props = await this.smartSelector.generateContextualProps(prompt, templateId, analysis);
       const duration = index === recommendedTemplates.length - 1 ? 200 : 160 + (index % 2) * 40;
       
-      return {
+      scenes.push({
         templateId,
         durationInFrames: duration,
         props
-      };
-    });
+      });
+    }
     
     return {
       scenes,

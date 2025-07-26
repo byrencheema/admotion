@@ -1,8 +1,8 @@
 import React from 'react';
 import { AbsoluteFill, Audio, staticFile, Sequence } from 'remotion';
 import { TransitionSeries, linearTiming } from '@remotion/transitions';
-import { slide } from '@remotion/transitions/slide';
 import { wipe } from '@remotion/transitions/wipe';
+import { slide } from '@remotion/transitions/slide';
 import { fade } from '@remotion/transitions/fade';
 import { Scene1 } from '../Scenes/Scene1';
 import { Scene2 } from '../Scenes/Scene2';
@@ -23,31 +23,31 @@ export const GeneratedComp: React.FC = () => {
           <Scene1 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
-          timing={linearTiming({durationInFrames: 20})}
-          presentation={slide()}
+          timing={linearTiming({durationInFrames: 15})}
+          presentation={wipe()}
         />
         <TransitionSeries.Sequence durationInFrames={210}>
           <Scene2 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           timing={linearTiming({durationInFrames: 15})}
-          presentation={wipe()}
+          presentation={slide()}
         />
-        <TransitionSeries.Sequence durationInFrames={150}>
+        <TransitionSeries.Sequence durationInFrames={180}>
           <Scene3 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           timing={linearTiming({durationInFrames: 15})}
           presentation={fade()}
         />
-        <TransitionSeries.Sequence durationInFrames={180}>
+        <TransitionSeries.Sequence durationInFrames={165}>
           <Scene4 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
-          timing={linearTiming({durationInFrames: 20})}
-          presentation={slide()}
+          timing={linearTiming({durationInFrames: 15})}
+          presentation={wipe()}
         />
-        <TransitionSeries.Sequence durationInFrames={180}>
+        <TransitionSeries.Sequence durationInFrames={165}>
           <Scene5 />
         </TransitionSeries.Sequence>
       </TransitionSeries>

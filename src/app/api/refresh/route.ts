@@ -7,23 +7,33 @@ const headers = {
 }
 
 async function deleteAllContent() {
+  console.log('🗑️ Starting content deletion...')
   const all: any[] = []
   let offset = 0
   const limit = 100
   // paginate through content
   while (true) {
     const res = await fetch(`${API_BASE}/content?limit=${limit}&offset=${offset}`, { headers })
+    if (!res.ok) {
+      throw new Error(`Failed to fetch content: ${res.statusText}`)
+    }
     const { items } = await res.json()
     all.push(...items)
     if (items.length < limit) break
     offset += limit
   }
+  
+  console.log(`🗑️ Found ${all.length} content items to delete`)
   for (const item of all) {
-    await fetch(`${API_BASE}/content/${item.id}`, {
+    const deleteRes = await fetch(`${API_BASE}/content/${item.id}`, {
       method: 'DELETE',
       headers,
     })
+    if (!deleteRes.ok) {
+      console.warn(`⚠️ Failed to delete content ${item.id}: ${deleteRes.statusText}`)
+    }
   }
+  console.log(`✅ Content deletion completed`)
 }
 
 async function deleteAllCategoriesAndTopics() {
@@ -64,13 +74,15 @@ async function deleteAllPromptsAndTemplates() {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('🔄 Starting Senso workspace refresh...')
   try {
     await deleteAllContent()
     await deleteAllPromptsAndTemplates()
     await deleteAllCategoriesAndTopics()
+    console.log('✅ Senso workspace refresh completed successfully')
     return NextResponse.json({ success: true, message: 'Senso workspace cleared' })
   } catch (err) {
-    console.error('Senso refresh error', err)
+    console.error('❌ Senso refresh error:', err)
     return NextResponse.json(
       { success: false, error: 'Failed to refresh Senso workspace' }, 
       { status: 500 }

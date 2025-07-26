@@ -5,7 +5,7 @@ const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const title = "Create Stunning Instagram Stories That Convert";
+  const title = "Transform Your Writing With AI-Powered Excellence";
   const words = title.split(' ');
 
   return (

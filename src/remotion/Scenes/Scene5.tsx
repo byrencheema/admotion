@@ -6,8 +6,8 @@ const Scene5: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const mainText = "Elevate Your Writing Today";
-  const buttonText = "Try Grammarly Free";
+  const mainText = "Start Creating Today";
+  const buttonText = "Get Started";
 
   // Neon glow pulse
   const glowIntensity = interpolate((frame % 60), [0, 30, 60], [0.5, 1.5, 0.5]);
@@ -74,7 +74,7 @@ const Scene5: React.FC = () => {
         `,
         filter: `brightness(${1 + glowIntensity * 0.2})`
       }}>
-        "Elevate Your Writing Today"
+        "Start Creating Today"
       </div>
       
       {/* Neon button */}
@@ -107,7 +107,7 @@ const Scene5: React.FC = () => {
           background: `linear-gradient(45deg, transparent, rgba(0,255,255,${0.1 * glowIntensity}), transparent)`,
           animation: 'none'
         }} />
-        <span style={{ position: 'relative', zIndex: 1 }}>"Try Grammarly Free"</span>
+        <span style={{ position: 'relative', zIndex: 1 }}>"Get Started"</span>
       </div>
       
       {/* Corner effects */}

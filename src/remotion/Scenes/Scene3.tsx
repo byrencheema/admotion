@@ -1,117 +1,103 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, random } from 'remotion';
-import { Circle } from '@remotion/shapes';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, staticFile, Img } from 'remotion';
 
-const Scene3: React.FC = () => {
+const Scene3: React.FC<{ productName: string; features: string[]; images?: string[] }> = ({ 
+  productName, 
+  features = [], 
+  images = [] 
+}) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const features = [{"title":"AI-Powered","description":"Advanced machine learning algorithms"},{"title":"Real-Time","description":"Instant writing suggestions"},{"title":"Multi-Platform","description":"Works everywhere you write"}] || [
-    { title: 'Feature 1', description: 'Amazing capability', color: '#FF6B6B' },
-    { title: 'Feature 2', description: 'Powerful tool', color: '#4ECDC4' },
-    { title: 'Feature 3', description: 'Easy to use', color: '#FFE66D' }
-  ];
+  const productImage = images.find(img => img.includes('product')) || images[0];
+  
+  const slideIn = spring({
+    fps,
+    frame: frame - 30,
+    config: { damping: 200, stiffness: 100 }
+  });
 
-  // Card morphing animation
-  const cardMorph = (index: number) => {
-    const startFrame = index * 30;
-    const progress = spring({
-      fps,
-      frame: frame - startFrame,
-      config: { damping: 300, stiffness: 400 }
-    });
-    
-    const rotateY = interpolate(progress, [0, 1], [90, 0]);
-    const scale = interpolate(progress, [0, 0.5, 1], [0.5, 1.1, 1]);
-    const opacity = interpolate(frame - startFrame, [0, 20], [0, 1]);
-    
-    return { rotateY, scale, opacity };
-  };
-
-  // Particle system for each card
-  const generateParticles = (cardIndex: number) => {
-    return Array.from({ length: 20 }, (_, i) => {
-      const particleFrame = frame - cardIndex * 30 - 10;
-      const angle = (i / 20) * Math.PI * 2;
-      const radius = interpolate(particleFrame, [0, 60], [0, 100]);
-      
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      const opacity = interpolate(particleFrame, [0, 30, 60], [0, 0.6, 0]);
-      
-      return { x, y, opacity };
-    });
-  };
+  const imageScale = interpolate(frame, [0, 60], [1.2, 1], {
+    extrapolateRight: 'clamp'
+  });
 
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 60
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      padding: '60px'
     }}>
-      {features.map((feature, index) => {
-        const morph = cardMorph(index);
-        const particles = generateParticles(index);
-        const cardX = (index - 1) * 320;
-        
-        return (
-          <div key={index} style={{
-            position: 'relative',
-            transform: `translateX(${cardX}px) perspective(1000px) rotateY(${morph.rotateY}deg) scale(${morph.scale})`,
-            opacity: morph.opacity,
-          }}>
-            {/* Particle effects */}
-            {particles.map((particle, i) => (
-              <Circle
-                key={i}
-                x={particle.x}
-                y={particle.y}
-                width={4}
-                height={4}
-                color={feature.color}
-                opacity={particle.opacity}
-              />
-            ))}
-            
-            {/* Card */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        height: '100%'
+      }}>
+        {/* Product Image */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          {productImage && (
             <div style={{
-              width: 280,
-              height: 200,
-              background: `linear-gradient(145deg, ${feature.color}20, ${feature.color}40)`,
-              borderRadius: 20,
-              border: `2px solid ${feature.color}`,
-              padding: 30,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: 15,
-              boxShadow: `0 20px 40px rgba(0,0,0,0.3), inset 0 0 20px ${feature.color}30`,
-              backdropFilter: 'blur(10px)'
+              transform: `scale(${imageScale})`,
+              borderRadius: '20px',
+              overflow: 'hidden',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              maxWidth: '400px',
+              maxHeight: '400px'
             }}>
-              <div style={{
-                fontSize: 24,
-                fontWeight: 'bold',
-                color: feature.color,
-                textAlign: 'center',
-                textShadow: `0 0 10px ${feature.color}`
-              }}>
-                {feature.title}
-              </div>
-              <div style={{
-                fontSize: 16,
-                color: 'rgba(255,255,255,0.8)',
-                textAlign: 'center',
-                lineHeight: 1.4
-              }}>
-                {feature.description || 'Amazing feature'}
-              </div>
+              <Img
+                src={staticFile(productImage.replace('/uploads', 'uploads'))}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
             </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div style={{
+          flex: 1,
+          paddingLeft: '60px',  
+          transform: `translateX(${interpolate(slideIn, [0, 1], [100, 0])}px)`
+        }}>
+          <h1 style={{
+            fontSize: 54,
+            fontWeight: '900',
+            color: '#1e293b',
+            marginBottom: '30px',
+            lineHeight: 1.2,
+            opacity: interpolate(frame, [30, 60], [0, 1], { extrapolateRight: 'clamp' })
+          }}>
+            {productName}
+          </h1>
+          
+          <div style={{
+            opacity: interpolate(frame, [60, 90], [0, 1], { extrapolateRight: 'clamp' })
+          }}>
+            {features.slice(0, 3).map((feature, index) => (
+              <div
+                key={index}
+                style={{
+                  fontSize: 24,
+                  color: '#475569',
+                  marginBottom: '20px',
+                  opacity: interpolate(frame, [90 + index * 20, 120 + index * 20], [0, 1], { extrapolateRight: 'clamp' }),
+                  transform: `translateX(${interpolate(frame, [90 + index * 20, 120 + index * 20], [30, 0])}px)`
+                }}
+              >
+                ✨ {feature}
+              </div>
+            ))}
           </div>
-        );
-      })}
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };

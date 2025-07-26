@@ -11,6 +11,95 @@ export interface SceneTemplate {
 
 export const SCENE_TEMPLATES: SceneTemplate[] = [
   {
+    id: 'hero-image-overlay', 
+    name: 'Hero with Image Background',
+    description: 'Hero text overlaid on uploaded background image with cinematic effects',
+    category: 'hero',
+    complexity: 'medium',
+    visualStyle: 'modern',
+    requiredProps: ['title', 'subtitle', 'images'],
+    code: `import React from 'react';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, staticFile, Img } from 'remotion';
+
+const {SCENE_NAME}: React.FC<{ title: string; subtitle?: string; images?: string[] }> = ({ title, subtitle, images = [] }) => {
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
+
+  const scale = spring({
+    fps,
+    frame,
+    config: { damping: 200, stiffness: 100 }
+  });
+  
+  const opacity = interpolate(frame, [0, 30], [0, 1], {
+    extrapolateRight: 'clamp'
+  });
+
+  const backgroundImage = images[0];
+  const overlayOpacity = interpolate(frame, [0, 60], [0.7, 0.4]);
+
+  return (
+    <AbsoluteFill>
+      {/* Background Image */}
+      {backgroundImage && (
+        <Img
+          src={staticFile(backgroundImage.replace('/uploads', 'uploads'))}
+          style={{
+            width: width,
+            height: height,
+            objectFit: 'cover',
+            filter: 'blur(2px) brightness(0.7)'
+          }}
+        />
+      )}
+      
+      {/* Dark Overlay */}
+      <AbsoluteFill style={{
+        background: \`linear-gradient(135deg, rgba(0,0,0,\${overlayOpacity}) 0%, rgba(30,30,60,\${overlayOpacity * 0.8}) 100%)\`,
+      }} />
+      
+      {/* Content */}
+      <AbsoluteFill style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        padding: '40px'
+      }}>
+        <div style={{
+          transform: \`scale(\${scale})\`,
+          opacity,
+          fontSize: 72,
+          fontWeight: '900',
+          color: 'white',
+          textShadow: '0 4px 20px rgba(0,0,0,0.8)',
+          marginBottom: '20px',
+          maxWidth: '80%',
+          lineHeight: 1.2
+        }}>
+          {title}
+        </div>
+        {subtitle && (
+          <div style={{
+            opacity: interpolate(frame, [30, 60], [0, 1], { extrapolateRight: 'clamp' }),
+            fontSize: 32,
+            color: 'rgba(255,255,255,0.9)',
+            textShadow: '0 2px 10px rgba(0,0,0,0.6)',
+            maxWidth: '70%',
+            lineHeight: 1.4
+          }}>
+            {subtitle}
+          </div>
+        )}
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+export { {SCENE_NAME} };`
+  },
+  {
     id: 'hero-animated-title',
     name: 'Animated Hero Title',
     description: 'Large animated title with spring animation',
@@ -1226,6 +1315,120 @@ const {SCENE_NAME}: React.FC = () => {
           </div>
         );
       })}
+    </AbsoluteFill>
+  );
+};
+
+export { {SCENE_NAME} };`
+  },
+  {
+    id: 'product-image-showcase',
+    name: 'Product Image Showcase', 
+    description: 'Dynamic product presentation using uploaded product images',
+    category: 'product',
+    complexity: 'medium',
+    visualStyle: 'modern',
+    requiredProps: ['productName', 'features', 'images'],
+    code: `import React from 'react';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, staticFile, Img } from 'remotion';
+
+const {SCENE_NAME}: React.FC<{ productName: string; features: string[]; images?: string[] }> = ({ 
+  productName, 
+  features = [], 
+  images = [] 
+}) => {
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
+
+  const productImage = images.find(img => img.includes('product')) || images[0];
+  
+  const slideIn = spring({
+    fps,
+    frame: frame - 30,
+    config: { damping: 200, stiffness: 100 }
+  });
+
+  const imageScale = interpolate(frame, [0, 60], [1.2, 1], {
+    extrapolateRight: 'clamp'
+  });
+
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      padding: '60px'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        height: '100%'
+      }}>
+        {/* Product Image */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          {productImage && (
+            <div style={{
+              transform: \`scale(\${imageScale})\`,
+              borderRadius: '20px',
+              overflow: 'hidden',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              maxWidth: '400px',
+              maxHeight: '400px'
+            }}>
+              <Img
+                src={staticFile(productImage.replace('/uploads', 'uploads'))}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div style={{
+          flex: 1,
+          paddingLeft: '60px',  
+          transform: \`translateX(\${interpolate(slideIn, [0, 1], [100, 0])}px)\`
+        }}>
+          <h1 style={{
+            fontSize: 54,
+            fontWeight: '900',
+            color: '#1e293b',
+            marginBottom: '30px',
+            lineHeight: 1.2,
+            opacity: interpolate(frame, [30, 60], [0, 1], { extrapolateRight: 'clamp' })
+          }}>
+            {productName}
+          </h1>
+          
+          <div style={{
+            opacity: interpolate(frame, [60, 90], [0, 1], { extrapolateRight: 'clamp' })
+          }}>
+            {features.slice(0, 3).map((feature, index) => (
+              <div
+                key={index}
+                style={{
+                  fontSize: 24,
+                  color: '#475569',
+                  marginBottom: '20px',
+                  opacity: interpolate(frame, [90 + index * 20, 120 + index * 20], [0, 1], { extrapolateRight: 'clamp' }),
+                  transform: \`translateX(\${interpolate(frame, [90 + index * 20, 120 + index * 20], [30, 0])}px)\`
+                }}
+              >
+                ✨ {feature}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };

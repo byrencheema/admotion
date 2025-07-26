@@ -16,28 +16,43 @@ export class TemplateOrchestrator {
     console.log('🎬 Template Orchestrator: Starting template-based video generation for:', prompt);
 
     try {
-      // Step 1: Plan video structure using templates
-      console.log('🎬 Step 1: Planning template video structure...');
+      // Step 1: Get available images
+      console.log('🖼️ Step 1: Getting available images...');
+      const { imageManager } = await import('./image-manager');
+      const availableImages = await imageManager.getAvailableImages();
+      console.log(`🖼️ Found ${availableImages.length} images for integration`);
+
+      // Step 2: Plan video structure using templates
+      console.log('🎬 Step 2: Planning template video structure...');
       const videoStructure = await this.director.planTemplateVideo(prompt);
 
-      // Step 2: Generate scene components from templates
-      console.log('🎭 Step 2: Generating scenes from templates...');
+      // Step 3: Add images to video structure
+      console.log('🖼️ Step 3: Adding images to video structure...');
+      const imageUrls = availableImages.map(img => img.url);
+      videoStructure.scenes.forEach(scene => {
+        if (!scene.props.images) {
+          scene.props.images = imageUrls;
+        }
+      });
+
+      // Step 4: Generate scene components from templates
+      console.log('🎭 Step 4: Generating scenes from templates...');
       const sceneComponents = this.generator.generateSceneComponents(videoStructure);
 
-      // Step 3: Create scene component files
-      console.log('📁 Step 3: Creating scene component files...');
+      // Step 5: Create scene component files
+      console.log('📁 Step 5: Creating scene component files...');
       try {
         await this.createSceneFiles(sceneComponents);
       } catch (fileError) {
         console.warn('📁 Could not create scene files, continuing anyway:', fileError);
       }
 
-      // Step 4: Generate master composition
-      console.log('🎬 Step 4: Generating master composition...');
-      const masterComponent = this.generator.generateMasterComposition(videoStructure, sceneComponents);
+      // Step 6: Generate master composition with image props
+      console.log('🎬 Step 6: Generating master composition...');
+      const masterComponent = this.generateMasterCompositionWithImages(videoStructure, sceneComponents, imageUrls);
 
-      // Step 5: Update the generated component
-      console.log('💾 Step 5: Updating generated component...');
+      // Step 7: Update the generated component
+      console.log('💾 Step 7: Updating generated component...');
       this.updateGeneratedComponent(masterComponent);
 
       console.log('✅ Template Orchestrator: Template video generation completed successfully');
@@ -76,6 +91,46 @@ export class TemplateOrchestrator {
         console.warn(`📄 Could not write scene file ${sceneName}:`, error);
       }
     }
+  }
+
+  private generateMasterCompositionWithImages(videoStructure: any, sceneComponents: any, imageUrls: string[]): string {
+    const sceneImports = Object.keys(sceneComponents).map(sceneName => 
+      `import { ${sceneName} } from '../Scenes/${sceneName}';`
+    ).join('\n');
+
+    const sceneSequences = videoStructure.scenes.map((scene: any, index: number) => {
+      const transition = videoStructure.transitions[index];
+      const SceneName = `Scene${index + 1}`;
+      const imageProps = scene.props.images ? `images={${JSON.stringify(scene.props.images)}}` : '';
+      
+      return `
+        <TransitionSeries.Sequence durationInFrames={${scene.durationInFrames}}>
+          <${SceneName} ${imageProps} />
+        </TransitionSeries.Sequence>
+        ${transition ? `<TransitionSeries.Transition
+          timing={linearTiming({durationInFrames: ${transition.durationInFrames}})}
+          presentation={${transition.type}()}
+        />` : ''}
+      `;
+    }).join('');
+
+    return `import React from 'react';
+import { AbsoluteFill } from 'remotion';
+import { TransitionSeries, linearTiming } from '@remotion/transitions';
+import { wipe } from '@remotion/transitions/wipe';
+import { slide } from '@remotion/transitions/slide';
+import { fade } from '@remotion/transitions/fade';
+${sceneImports}
+
+export const GeneratedComp: React.FC = () => {
+  return (
+    <AbsoluteFill>
+      <TransitionSeries>
+        ${sceneSequences}
+      </TransitionSeries>
+    </AbsoluteFill>
+  );
+};`;
   }
 
   private updateGeneratedComponent(componentCode: string): void {

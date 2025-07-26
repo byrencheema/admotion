@@ -1,75 +1,78 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, random } from 'remotion';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, staticFile, Img } from 'remotion';
 
-const Scene1: React.FC = () => {
+const Scene1: React.FC<{ title: string; subtitle?: string; images?: string[] }> = ({ title, subtitle, images = [] }) => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const title = "Transform Your Writing With AI-Powered Excellence";
-  const words = title.split(' ');
+  const scale = spring({
+    fps,
+    frame,
+    config: { damping: 200, stiffness: 100 }
+  });
+  
+  const opacity = interpolate(frame, [0, 30], [0, 1], {
+    extrapolateRight: 'clamp'
+  });
+
+  const backgroundImage = images[0];
+  const overlayOpacity = interpolate(frame, [0, 60], [0.7, 0.4]);
 
   return (
-    <AbsoluteFill style={{
-      background: 'radial-gradient(circle at center, #2D1B69 0%, #11052C 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden'
-    }}>
-      <div style={{
+    <AbsoluteFill>
+      {/* Background Image */}
+      {backgroundImage && (
+        <Img
+          src={staticFile(backgroundImage.replace('/uploads', 'uploads'))}
+          style={{
+            width: width,
+            height: height,
+            objectFit: 'cover',
+            filter: 'blur(2px) brightness(0.7)'
+          }}
+        />
+      )}
+      
+      {/* Dark Overlay */}
+      <AbsoluteFill style={{
+        background: `linear-gradient(135deg, rgba(0,0,0,${overlayOpacity}) 0%, rgba(30,30,60,${overlayOpacity * 0.8}) 100%)`,
+      }} />
+      
+      {/* Content */}
+      <AbsoluteFill style={{
         display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
+        flexDirection: 'column',
         alignItems: 'center',
-        gap: 20,
-        maxWidth: '80%'
+        justifyContent: 'center',
+        textAlign: 'center',
+        padding: '40px'
       }}>
-        {words.map((word, i) => {
-          const wordDelay = i * 8;
-          const scale = spring({
-            fps,
-            frame: frame - wordDelay,
-            config: { damping: 200, stiffness: 300 }
-          });
-          
-          const slideX = interpolate(
-            frame - wordDelay,
-            [0, 20],
-            [random(`word-x-${i}`) * 200 - 100, 0],
-            { extrapolateRight: 'clamp' }
-          );
-          
-          const opacity = interpolate(
-            frame - wordDelay,
-            [0, 15, 120, 135],
-            [0, 1, 1, 0]
-          );
-          
-          const rotateZ = interpolate(
-            frame - wordDelay,
-            [0, 20],
-            [random(`word-rot-${i}`) * 40 - 20, 0],
-            { extrapolateRight: 'clamp' }
-          );
-
-          return (
-            <div
-              key={i}
-              style={{
-                transform: `scale(${scale}) translateX(${slideX}px) rotateZ(${rotateZ}deg)`,
-                opacity,
-                fontSize: 64,
-                fontWeight: 'bold',
-                color: '#FFFFFF',
-                textShadow: '0 0 20px rgba(255,255,255,0.5)',
-                filter: `blur(${Math.max(0, 10 - frame / 5)}px)`
-              }}
-            >
-              {word}
-            </div>
-          );
-        })}
-      </div>
+        <div style={{
+          transform: `scale(${scale})`,
+          opacity,
+          fontSize: 72,
+          fontWeight: '900',
+          color: 'white',
+          textShadow: '0 4px 20px rgba(0,0,0,0.8)',
+          marginBottom: '20px',
+          maxWidth: '80%',
+          lineHeight: 1.2
+        }}>
+          {title}
+        </div>
+        {subtitle && (
+          <div style={{
+            opacity: interpolate(frame, [30, 60], [0, 1], { extrapolateRight: 'clamp' }),
+            fontSize: 32,
+            color: 'rgba(255,255,255,0.9)',
+            textShadow: '0 2px 10px rgba(0,0,0,0.6)',
+            maxWidth: '70%',
+            lineHeight: 1.4
+          }}>
+            {subtitle}
+          </div>
+        )}
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };

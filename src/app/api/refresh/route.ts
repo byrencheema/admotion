@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { readdir, unlink } from 'fs/promises'
+import { existsSync } from 'fs'
+import path from 'path'
 
 const API_BASE = 'https://sdk.senso.ai/api/v1'
 const headers = {
   'Content-Type': 'application/json',
   'X-API-Key': process.env.SENSO_API_KEY!,
 }
+
+const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'images')
 
 async function deleteAllContent() {
   console.log('🗑️ Starting content deletion...')
@@ -73,18 +78,24 @@ async function deleteAllPromptsAndTemplates() {
   }
 }
 
+
 export async function POST(request: NextRequest) {
-  console.log('🔄 Starting Senso workspace refresh...')
+  console.log('🔄 Starting workspace refresh...')
   try {
+    // Clear Senso workspace only (keep uploaded images)
     await deleteAllContent()
     await deleteAllPromptsAndTemplates()
     await deleteAllCategoriesAndTopics()
-    console.log('✅ Senso workspace refresh completed successfully')
-    return NextResponse.json({ success: true, message: 'Senso workspace cleared' })
+    
+    console.log('✅ Workspace refresh completed successfully')
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Workspace cleared - Senso workspace refreshed (images preserved)' 
+    })
   } catch (err) {
-    console.error('❌ Senso refresh error:', err)
+    console.error('❌ Refresh error:', err)
     return NextResponse.json(
-      { success: false, error: 'Failed to refresh Senso workspace' }, 
+      { success: false, error: 'Failed to refresh workspace' }, 
       { status: 500 }
     )
   }

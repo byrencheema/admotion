@@ -11,6 +11,7 @@ import {
 } from "../../types/constants";
 import { GeneratedComp } from "../remotion/Generated/GeneratedComp";
 import { FileUpload } from "../components/FileUpload";
+import { ImageUpload } from "../components/ImageUpload";
 
 const Home: NextPage = () => {
   const [prompt, setPrompt] = useState<string>("");
@@ -19,6 +20,7 @@ const Home: NextPage = () => {
   const [showCode, setShowCode] = useState<boolean>(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isResetting, setIsResetting] = useState<boolean>(false);
 
@@ -28,6 +30,14 @@ const Home: NextPage = () => {
     console.log('📁 File uploaded:', file.name, 'Size:', file.size, 'Type:', file.type);
     if (fileId) {
       console.log('🆔 File ID:', fileId);
+    }
+  };
+
+  const handleImageSelect = (image: File, previewUrl?: string, imageId?: string) => {
+    setUploadedImages(prev => [...prev, image]);
+    console.log('🖼️ Image uploaded:', image.name, 'Size:', image.size, 'Type:', image.type);
+    if (imageId) {
+      console.log('🆔 Image ID:', imageId);
     }
   };
 
@@ -45,6 +55,7 @@ const Home: NextPage = () => {
       
       if (data.success) {
         console.log('✅ Refresh successful:', data.message);
+        
         alert(data.message || 'Refresh completed successfully!');
       } else {
         console.error('❌ Refresh failed:', data.error);
@@ -76,6 +87,9 @@ const Home: NextPage = () => {
         setGeneratedCode("");
         setShowCode(false);
         setPrompt("");
+        setUploadedFile(null);
+        setUploadedFileId(null);
+        setUploadedImages([]);
         alert(data.message + ' The page will refresh.');
         setTimeout(() => window.location.reload(), 1000);
       } else {
@@ -97,6 +111,9 @@ const Home: NextPage = () => {
     if (uploadedFile) {
       console.log('📁 Using uploaded file:', uploadedFile.name);
     }
+    if (uploadedImages.length > 0) {
+      console.log('🖼️ Using uploaded images:', uploadedImages.map(img => img.name).join(', '));
+    }
     setIsGenerating(true);
     
     try {
@@ -109,7 +126,10 @@ const Home: NextPage = () => {
           hasFile: !!uploadedFile,
           fileName: uploadedFile?.name,
           fileType: uploadedFile?.type,
-          fileId: uploadedFileId
+          fileId: uploadedFileId,
+          hasImages: uploadedImages.length > 0,
+          imageCount: uploadedImages.length,
+          imageNames: uploadedImages.map(img => img.name)
         })
       });
       
@@ -179,7 +199,7 @@ const Home: NextPage = () => {
                 disabled={isGenerating || isRefreshing || isResetting}
                 className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isRefreshing ? '🔄 Refreshing Senso...' : '🔄 Refresh Senso'}
+                {isRefreshing ? '🔄 Refreshing...' : '🔄 Refresh & Clear'}
               </button>
             </div>
           </div>
@@ -216,6 +236,54 @@ const Home: NextPage = () => {
                   >
                     Remove
                   </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Image Upload Section */}
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-3 text-gray-700">
+              🖼️ Upload Reference Images (Optional)
+            </h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Upload images to inspire your video's visual style, colors, and design elements
+            </p>
+            <ImageUpload
+              onImageSelect={handleImageSelect}
+              maxSize={10 * 1024 * 1024}
+              disabled={isGenerating || isRefreshing || isResetting}
+              uploadToServer={true}
+            />
+            {uploadedImages.length > 0 && (
+              <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-purple-800">
+                    📊 {uploadedImages.length} image{uploadedImages.length > 1 ? 's' : ''} uploaded
+                  </span>
+                  <button
+                    onClick={() => {
+                      setUploadedImages([]);
+                    }}
+                    className="text-purple-600 hover:text-purple-800 text-sm"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {uploadedImages.map((image, index) => (
+                    <div key={index} className="text-xs bg-white rounded p-2 border border-purple-100">
+                      <div className="flex items-center space-x-1">
+                        <span className="text-purple-600">🖼️</span>
+                        <span className="truncate font-medium text-purple-800">
+                          {image.name.length > 15 ? image.name.substring(0, 15) + '...' : image.name}
+                        </span>
+                      </div>
+                      <span className="text-purple-600">
+                        ({Math.round(image.size / 1024)} KB)
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

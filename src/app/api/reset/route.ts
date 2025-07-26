@@ -2,6 +2,24 @@ import { NextResponse } from 'next/server';
 import { writeFileSync, readdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
 
+// Function to clear uploaded images
+async function clearUploadedImages() {
+  try {
+    const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads', 'images');
+    const files = await readdirSync(UPLOAD_DIR);
+    
+    for (const file of files) {
+      const filePath = join(UPLOAD_DIR, file);
+      await unlinkSync(filePath);
+      console.log(`🗑️ Deleted uploaded image: ${file}`);
+    }
+    
+    console.log(`✅ Cleared ${files.length} uploaded images`);
+  } catch (error) {
+    console.warn('⚠️ Could not clear uploaded images:', error);
+  }
+}
+
 export async function POST() {
   console.log('🔄 API: Resetting generated content...');
   
@@ -64,6 +82,9 @@ export const GeneratedComp: React.FC = () => {
     } catch (error) {
       console.warn('⚠️ Could not clean scene files:', error);
     }
+
+    // Clear uploaded images
+    await clearUploadedImages();
 
     return NextResponse.json({
       success: true,

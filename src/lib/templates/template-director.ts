@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { SCENE_TEMPLATES, TRANSITION_LIBRARY, AUDIO_LIBRARY, getTemplatesByCategory, getTemplatesByStyle, getRandomTemplate } from './scene-templates';
 import { SmartTemplateSelector } from './smart-template-selector';
+import { imageManager, ImageAsset } from './image-manager';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -38,6 +39,10 @@ export class TemplateDirectorAgent {
   async planTemplateVideo(prompt: string): Promise<TemplateVideoStructure> {
     console.log('🎬 Template Director: Planning video structure for prompt:', prompt);
 
+    // Get available images for integration
+    const availableImages = await imageManager.getAvailableImages();
+    console.log(`🖼️ Template Director: Found ${availableImages.length} images for integration`);
+
     // Get contextual information from Senso if available
     const contextualInfo = await this.getContextualInfo(prompt);
 
@@ -54,6 +59,9 @@ export class TemplateDirectorAgent {
     const availableTransitions = Object.keys(TRANSITION_LIBRARY);
     const availableAudio = AUDIO_LIBRARY;
 
+    // Generate image context for each template category
+    const imageContext = this.generateImageContextForTemplates(availableImages);
+
     const systemPrompt = `You are an AI video director who intelligently selects from advanced Remotion templates to create stunning marketing videos. You MUST only use the provided templates and transitions.
 
 CRITICAL: Return ONLY valid JSON. No explanations. No markdown.
@@ -64,6 +72,8 @@ TEMPLATE SELECTION STRATEGY:
 - Use advanced templates that showcase Remotion's capabilities
 - Match template categories to content flow: hero → features/product → stats → cta
 - Consider the prompt's tone (tech = futuristic, luxury = modern, nature = organic)
+- INTEGRATE UPLOADED IMAGES: Use available images as backgrounds, overlays, or visual elements
+- Match image mood and colors with template styling for cohesive design
 
 Available Scene Templates:
 ${JSON.stringify(availableTemplates, null, 2)}
@@ -73,6 +83,8 @@ ${JSON.stringify(availableTransitions)}
 
 Available Audio:
 ${JSON.stringify(availableAudio, null, 2)}
+
+${imageContext}
 
 CRITICAL REMOTION RULES:
 - Use 'width' and 'height' props for shapes, NEVER 'size'
@@ -88,6 +100,8 @@ Create a sophisticated video structure by intelligently selecting templates:
 - Use rich, contextual prop values that match the prompt
 - Leverage advanced templates (morphing cards, 3D showcases, neon effects)
 - Create visual narrative flow (intro → showcase → proof → action)
+- INCLUDE IMAGE PROPS: Add 'images' array to scene props containing relevant image URLs
+- Match image colors and mood to template styling for professional results
 
 JSON Format:
 {
@@ -97,7 +111,8 @@ JSON Format:
       "durationInFrames": 150,
       "props": {
         "title": "Your App Name",
-        "subtitle": "Tagline here"
+        "subtitle": "Tagline here",
+        "images": ["/uploads/images/logo.png", "/uploads/images/bg.jpg"]
       }
     }
   ],
@@ -212,6 +227,41 @@ Prioritize advanced templates for maximum visual impact.`
     }
   }
   
+  private generateImageContextForTemplates(availableImages: ImageAsset[]): string {
+    if (availableImages.length === 0) {
+      return `AVAILABLE IMAGES: None uploaded - use default template styling`;
+    }
+
+    const imagesByCategory = {
+      hero: imageManager.selectImagesForScene(availableImages, 'hero', 'hero-animated-title'),
+      features: imageManager.selectImagesForScene(availableImages, 'features', 'features-morphing-cards'),
+      product: imageManager.selectImagesForScene(availableImages, 'product', 'product-3d-showcase'),
+      cta: imageManager.selectImagesForScene(availableImages, 'cta', 'cta-neon-pulse'),
+      stats: imageManager.selectImagesForScene(availableImages, 'stats', 'stats-counter-dynamic')
+    };
+
+    let context = `AVAILABLE IMAGES FOR TEMPLATE INTEGRATION:\n`;
+    
+    Object.entries(imagesByCategory).forEach(([category, images]) => {
+      if (images.length > 0) {
+        context += `\n${category.toUpperCase()} SCENES:\n`;
+        images.forEach(img => {
+          const analysis = img.analysis;
+          context += `- ${img.url}: ${analysis?.contentType} (${analysis?.mood} mood, colors: ${analysis?.dominantColors.join(', ')})\n`;
+        });
+      }
+    });
+
+    context += `\nIMAGE INTEGRATION INSTRUCTIONS:
+- Add 'images' array to scene props with relevant image URLs from above
+- Use staticFile() in template code to reference images
+- Consider image mood and colors when setting scene styling
+- Use images as backgrounds, overlays, or decorative elements
+- Ensure images complement the scene's purpose and visual hierarchy`;
+
+    return context;
+  }
+
   private generateSmartGuidance(prompt: string): string {
     const analysis = this.smartSelector.analyzeContent(prompt);
     const recommendedTemplates = this.smartSelector.selectOptimalTemplates(analysis, 5);

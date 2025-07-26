@@ -5,7 +5,7 @@ const Scene4: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const stats = [{"label":"Daily Active Users","value":"30M+"},{"label":"Accuracy Rate","value":"99.9%"},{"label":"Supported Languages","value":"50+"}] || [
+  const stats = [{"label":"Client Satisfaction","value":"98%"},{"label":"Brand Recognition","value":"2.5x"},{"label":"Engagement Rate","value":"85%"}] || [
     { label: 'Users', value: 50000, suffix: '+', color: '#FF6B6B' },
     { label: 'Downloads', value: 100000, suffix: '+', color: '#4ECDC4' },
     { label: 'Rating', value: 4.9, suffix: '/5', color: '#FFE66D' }

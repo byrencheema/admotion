@@ -10,53 +10,52 @@ import {
   VIDEO_WIDTH,
 } from "../../types/constants";
 import { GeneratedComp } from "../remotion/Generated/GeneratedComp";
+import { FileUpload } from "../components/FileUpload";
 
 const Home: NextPage = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [generatedCode, setGeneratedCode] = useState<string>("");
   const [showCode, setShowCode] = useState<boolean>(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isResetting, setIsResetting] = useState<boolean>(false);
 
-  const generateVideo = async () => {
-    if (!prompt.trim()) return;
-    
-    console.log('🚀 Starting generation with prompt:', prompt);
-    setIsGenerating(true);
+  const handleFileSelect = (file: File, fileId?: string) => {
+    setUploadedFile(file);
+    setUploadedFileId(fileId || null);
+    console.log('📁 File uploaded:', file.name, 'Size:', file.size, 'Type:', file.type);
+    if (fileId) {
+      console.log('🆔 File ID:', fileId);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
     
     try {
-      console.log('📡 Sending request to AI...');
-      const response = await fetch('/api/generate', {
+      console.log('🔄 Starting refresh...');
+      const response = await fetch('/api/refresh', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
+        headers: { 'Content-Type': 'application/json' }
       });
       
-      console.log('📥 Received response, status:', response.status);
       const data = await response.json();
-      console.log('📄 Response data:', data);
       
       if (data.success) {
-        console.log('✅ Success! Generated component');
-        setGeneratedCode(data.componentCode);
-        setShowCode(true);
-        alert(data.message + ' The page will refresh to show your new video.');
-        // Refresh the page to load the new component
-        setTimeout(() => window.location.reload(), 1000);
+        console.log('✅ Refresh successful:', data.message);
+        alert(data.message || 'Refresh completed successfully!');
       } else {
-        console.error('❌ Generation failed:', data.message);
-        alert('Generation failed: ' + data.message);
-        if (data.componentCode) {
-          setGeneratedCode(data.componentCode);
-          setShowCode(true);
-        }
+        console.error('❌ Refresh failed:', data.error);
+        alert('Refresh failed: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
-      console.error('💥 Generation failed:', error);
-      alert('Failed to generate video. Check console for details.');
+      console.error('💥 Refresh error:', error);
+      alert('Failed to refresh. Check console for details.');
     } finally {
-      setIsGenerating(false);
-      console.log('🏁 Generation complete');
+      setIsRefreshing(false);
+      console.log('🏁 Refresh complete');
     }
   };
 
@@ -91,6 +90,57 @@ const Home: NextPage = () => {
     }
   };
 
+  const generateVideo = async () => {
+    if (!prompt.trim()) return;
+    
+    console.log('🚀 Starting generation with prompt:', prompt);
+    if (uploadedFile) {
+      console.log('📁 Using uploaded file:', uploadedFile.name);
+    }
+    setIsGenerating(true);
+    
+    try {
+      console.log('📡 Sending request to AI...');
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          prompt,
+          hasFile: !!uploadedFile,
+          fileName: uploadedFile?.name,
+          fileType: uploadedFile?.type,
+          fileId: uploadedFileId
+        })
+      });
+      
+      console.log('📥 Received response, status:', response.status);
+      const data = await response.json();
+      console.log('📄 Response data:', data);
+      
+      if (data.success) {
+        console.log('✅ Success! Generated component');
+        setGeneratedCode(data.componentCode);
+        setShowCode(true);
+        alert(data.message + ' The page will refresh to show your new video.');
+        // Refresh the page to load the new component
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        console.error('❌ Generation failed:', data.message);
+        alert('Generation failed: ' + data.message);
+        if (data.componentCode) {
+          setGeneratedCode(data.componentCode);
+          setShowCode(true);
+        }
+      }
+    } catch (error) {
+      console.error('💥 Generation failed:', error);
+      alert('Failed to generate video. Check console for details.');
+    } finally {
+      setIsGenerating(false);
+      console.log('🏁 Generation complete');
+    }
+  };
+
   return (
     <div>
       <div className="max-w-screen-md m-auto mb-5">
@@ -107,27 +157,71 @@ const Home: NextPage = () => {
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe your marketing video... (e.g., 'Product launch announcement with gold accents' or 'Brand intro with elegant animations')"
               className="flex-1 p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg resize-none h-20"
-              disabled={isGenerating || isResetting}
+              disabled={isGenerating || isRefreshing || isResetting}
             />
             <div className="flex flex-col gap-2">
               <button
                 onClick={generateVideo}
-                disabled={isGenerating || isResetting || !prompt.trim()}
+                disabled={isGenerating || isRefreshing || isResetting || !prompt.trim()}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isGenerating ? '🤖 Generating...' : '✨ Generate'}
               </button>
               <button
                 onClick={resetVideo}
-                disabled={isGenerating || isResetting}
+                disabled={isGenerating || isRefreshing || isResetting}
                 className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isResetting ? '🔄 Resetting...' : '🗑️ Reset'}
               </button>
+              <button
+                onClick={handleRefresh}
+                disabled={isGenerating || isRefreshing || isResetting}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isRefreshing ? '🔄 Refreshing...' : '🔄 Refresh'}
+              </button>
             </div>
           </div>
+          
+          {/* File Upload Section */}
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-3 text-gray-700">
+              📁 Upload Reference Files (Optional, Text Only)
+            </h3>
+            <FileUpload
+              onFileSelect={handleFileSelect}
+              accept=".pdf,.doc,.docx"
+              maxSize={50 * 1024 * 1024}
+              disabled={isGenerating || isRefreshing || isResetting}
+            />
+            {uploadedFile && (
+              <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-green-600">✅</span>
+                    <span className="text-sm font-medium text-green-800">
+                      {uploadedFile.name}
+                    </span>
+                    <span className="text-xs text-green-600">
+                      ({Math.round(uploadedFile.size / 1024)} KB)
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setUploadedFile(null);
+                      setUploadedFileId(null);
+                    }}
+                    className="text-green-600 hover:text-green-800 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="overflow-hidden rounded-geist shadow-[0_0_200px_rgba(0,0,0,0.15)] mb-10">
+        <div className="overflow-hidden rounded-lg shadow-[0_0_200px_rgba(0,0,0,0.15)] mb-10">
           <Player
             component={GeneratedComp}
             inputProps={{}}

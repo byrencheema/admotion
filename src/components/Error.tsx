@@ -4,7 +4,7 @@ export const ErrorComp: React.FC<{
   message: string;
 }> = ({ message }) => {
   return (
-    <div className="text-geist-error font-geist py-geist-half">
+    <div className="text-red-600 font-sans py-3">
       <svg
         fill="none"
         shapeRendering="geometricPrecision"

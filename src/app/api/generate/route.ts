@@ -47,3 +47,67 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// SENSO STUFF - NEED TO ADD TO ENDPOINT ^^ LATER
+// Note: Next.js App Router has built-in fetch, no need to import
+
+const API_BASE = 'https://sdk.senso.ai/api/v1';
+const headers = {
+  'Content-Type': 'application/json',
+  'X-API-Key': process.env.SENSO_API_KEY!,
+};
+
+interface CanonicalTopic { name: string; description?: string }
+interface CanonicalCategory { name: string; description?: string; topics: CanonicalTopic[] }
+
+const canonicalTaxonomy: CanonicalCategory[] = [
+  {
+    name: "Product Assets",
+    topics: [{ name: "Product specifications", description: "Tech specs, sheets" }],
+  },
+  {
+    name: "Marketing Content",
+    topics: [
+      { name: "Taglines & slogans" },
+      { name: "Ad copy", description: "Video scripts, web banners" },
+      { name: "Campaign briefs" },
+    ],
+  },
+];
+
+async function syncSensoTaxonomy() {
+  // 1. Fetch existing categories + topics
+  const resp = await fetch(`${API_BASE}/categories/all`, { headers });
+  if (!resp.ok) throw new Error(`Failed to list categories: ${resp.statusText}`);
+  const existing = await resp.json() as Array<{ category_id: string; name: string; topics: { name: string; topic_id: string; }[] }>;
+
+  // 2. Process each canonical category
+  for (const cat of canonicalTaxonomy) {
+    const found = existing.find(c => c.name === cat.name);
+    if (!found) {
+      // create new category + nested topics
+      const body = { categories: [ { name: cat.name, description: cat.description, topics: cat.topics } ] };
+      const createResp = await fetch(`${API_BASE}/categories/batch-create`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+      if (!createResp.ok) throw new Error(`Failed batch-create category ${cat.name}: ${await createResp.text()}`);
+      console.log(`Created category "${cat.name}" with topics.`);
+    } else {
+      // check for missing topics
+      const existingTopicNames = found.topics.map(t => t.name);
+      const missingTopics = cat.topics.filter(t => !existingTopicNames.includes(t.name));
+      if (missingTopics.length > 0) {
+        const tBody = { topics: missingTopics };
+        const tResp = await fetch(`${API_BASE}/categories/${found.category_id}/topics/batch-create`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(tBody),
+        });
+        if (!tResp.ok) throw new Error(`Failed to create topics in ${cat.name}: ${await tResp.text()}`);
+        console.log(`Created ${missingTopics.length} topic(s) in "${cat.name}"`);
+      }
+    }
+  }
+}

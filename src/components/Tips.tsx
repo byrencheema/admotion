@@ -9,7 +9,7 @@ const Tip: React.FC<{
     <a href={href} target="_blank" rel="noreferrer" className="flex-1">
       <div className="transition-transform duration-200 ease-in-out p-2.5 group hover:-translate-y-0.5">
         <div className="flex flex-row items-center justify-start">
-          <h4 className="my-3 font-bold text-foreground">{title}</h4>
+          <h4 className="my-3 font-bold text-black">{title}</h4>
           <div className="flex-1"></div>
           <svg
             className="opacity-0 transition-opacity duration-200 ease-in-out group-hover:opacity-100"
@@ -22,7 +22,7 @@ const Tip: React.FC<{
             />
           </svg>
         </div>
-        <p className="text-sm leading-normal text-subtitle mb-6">
+        <p className="text-sm leading-normal text-gray-600 mb-6">
           {description}
         </p>
       </div>
@@ -32,7 +32,7 @@ const Tip: React.FC<{
 
 export const Tips: React.FC = () => {
   return (
-    <div className="flex flex-col md:flex-row font-geist">
+    <div className="flex flex-col md:flex-row font-sans">
       <Tip
         href="https://www.remotion.dev/docs/the-fundamentals"
         title="Learn Remotion"

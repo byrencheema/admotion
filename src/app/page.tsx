@@ -5,58 +5,170 @@ import type { NextPage } from "next";
 import React, { useMemo, useState } from "react";
 import { z } from "zod";
 import {
-  defaultMyCompProps,
-  CompositionProps,
   DURATION_IN_FRAMES,
   VIDEO_FPS,
   VIDEO_HEIGHT,
   VIDEO_WIDTH,
 } from "../../types/constants";
-import { RenderControls } from "../components/RenderControls";
-import { Spacing } from "../components/Spacing";
-import { Tips } from "../components/Tips";
-import { Main } from "../remotion/MyComp/Main";
+import { GeneratedComp } from "../remotion/Generated/GeneratedComp";
 
 const Home: NextPage = () => {
-  const [text, setText] = useState<string>(defaultMyCompProps.title);
+  const [prompt, setPrompt] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [generatedCode, setGeneratedCode] = useState<string>("");
+  const [showCode, setShowCode] = useState<boolean>(false);
 
-  const inputProps: z.infer<typeof CompositionProps> = useMemo(() => {
-    return {
-      title: text,
-    };
-  }, [text]);
+  const generateVideo = async () => {
+    if (!prompt.trim()) return;
+    
+    console.log('🚀 Starting generation with prompt:', prompt);
+    setIsGenerating(true);
+    
+    try {
+      console.log('📡 Sending request to OpenAI...');
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+      
+      console.log('📥 Received response, status:', response.status);
+      const data = await response.json();
+      console.log('📄 Response data:', data);
+      
+      if (data.success) {
+        console.log('✅ Success! Generated component');
+        setGeneratedCode(data.componentCode);
+        setShowCode(true);
+        alert(data.message + ' The page will refresh to show your new video.');
+        // Refresh the page to load the new component
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        console.error('❌ Generation failed:', data.message);
+        alert('Generation failed: ' + data.message);
+        if (data.componentCode) {
+          setGeneratedCode(data.componentCode);
+          setShowCode(true);
+        }
+      }
+    } catch (error) {
+      console.error('💥 Generation failed:', error);
+      alert('Failed to generate video. Check console for details.');
+    } finally {
+      setIsGenerating(false);
+      console.log('🏁 Generation complete');
+    }
+  };
 
   return (
     <div>
       <div className="max-w-screen-md m-auto mb-5">
-        <div className="overflow-hidden rounded-geist shadow-[0_0_200px_rgba(0,0,0,0.15)] mb-10 mt-16">
+        <div className="mb-8 mt-16">
+          <h1 className="text-3xl font-bold mb-4 text-center">
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Admotion
+            </span>
+            <div className="text-lg text-gray-600 mt-1">AI Marketing Video Generator</div>
+          </h1>
+          <div className="flex gap-2">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe your marketing video... (e.g., 'Product launch announcement with gold accents' or 'Brand intro with elegant animations')"
+              className="flex-1 p-3 border rounded-lg resize-none h-20"
+              disabled={isGenerating}
+            />
+            <button
+              onClick={generateVideo}
+              disabled={isGenerating || !prompt.trim()}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGenerating ? '🤖 Generating...' : '✨ Generate'}
+            </button>
+          </div>
+        </div>
+        <div className="overflow-hidden rounded-geist shadow-[0_0_200px_rgba(0,0,0,0.15)] mb-10">
           <Player
-            component={Main}
-            inputProps={inputProps}
+            component={GeneratedComp}
+            inputProps={{}}
             durationInFrames={DURATION_IN_FRAMES}
             fps={VIDEO_FPS}
             compositionHeight={VIDEO_HEIGHT}
             compositionWidth={VIDEO_WIDTH}
             style={{
-              // Can't use tailwind class for width since player's default styles take presedence over tailwind's,
-              // but not over inline styles
               width: "100%",
             }}
             controls
             autoPlay
             loop
+            acknowledgeRemotionLicense
           />
         </div>
-        <RenderControls
-          text={text}
-          setText={setText}
-          inputProps={inputProps}
-        ></RenderControls>
-        <Spacing></Spacing>
-        <Spacing></Spacing>
-        <Spacing></Spacing>
-        <Spacing></Spacing>
-        <Tips></Tips>
+        
+        {showCode && (
+          <div className="mb-6 p-4 bg-gray-100 rounded-lg">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">Generated Code</h3>
+              <button
+                onClick={() => setShowCode(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <pre className="bg-black text-green-400 p-4 rounded text-sm overflow-x-auto max-h-96">
+              <code>{generatedCode}</code>
+            </pre>
+          </div>
+        )}
+        
+        <div className="text-center text-gray-600 mt-8">
+          <h2 className="text-xl font-semibold mb-4">🎯 Marketing Video Templates:</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+              <strong>🚀 Product Launch:</strong><br/>
+              <em>"New product announcement with luxury gold reveal and premium gradient"</em>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">  
+              <strong>📱 App Promotion:</strong><br/>
+              <em>"Download our app CTA with modern tech aesthetics and call-to-action"</em>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+              <strong>🏢 Brand Intro:</strong><br/>
+              <em>"Corporate brand introduction with professional blue gradient and clean typography"</em>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200">
+              <strong>🎉 Sale Alert:</strong><br/>
+              <em>"Limited time offer announcement with urgency red gradients and attention-grabbing effects"</em>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg border border-pink-200">
+              <strong>📈 Success Story:</strong><br/>
+              <em>"Customer success testimonial with trustworthy design and professional animations"</em>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg border border-indigo-200">
+              <strong>📺 Social Media:</strong><br/>
+              <em>"Instagram story template with trendy gradients and engaging social media effects"</em>
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="font-semibold text-lg mb-3">💡 Marketing Video Pro Tips:</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <strong>🎯 Marketing Styles:</strong> professional, corporate, luxury, trendy, trustworthy, urgent
+              </div>
+              <div>
+                <strong>🎨 Brand Colors:</strong> corporate blue, luxury gold, trust green, urgency red, tech neon
+              </div>
+              <div>
+                <strong>⚡ Call-to-Actions:</strong> subscribe, download, buy now, learn more, sign up, get started
+              </div>
+              <div>
+                <strong>📱 Platforms:</strong> Instagram story, TikTok, LinkedIn post, Twitter video, YouTube short
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

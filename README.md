@@ -2,7 +2,7 @@
 <br/>
 <br/>
 
-This is a Next.js template for building programmatic video apps, with [`@remotion/player`](https://remotion.dev/player) and [`@remotion/lambda`](https://remotion.dev/lambda) built in.
+This is Admotion - a Next.js app for building AI-powered marketing videos, with [`@remotion/player`](https://remotion.dev/player) and [`@remotion/lambda`](https://remotion.dev/lambda) built in.
 
 This template uses the Next.js App directory, with TailwindCSS. There is a [Non-TailwindCSS version](https://github.com/remotion-dev/template-next-app-dir), and a [Pages directory version](https://github.com/remotion-dev/template-next-pages-dir) of this template available.
 
@@ -14,6 +14,7 @@ This template uses the Next.js App directory, with TailwindCSS. There is a [Non-
 
 ```
 pnpm i
+
 ```
 
 afterwards. Alternatively, use this command to scaffold a project:
@@ -86,3 +87,4 @@ Found an issue with Remotion? [File an issue here](https://remotion.dev/issue).
 ## License
 
 Note that for some entities a company license is needed. [Read the terms here](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md).
+

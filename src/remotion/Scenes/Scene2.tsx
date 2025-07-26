@@ -1,131 +1,117 @@
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, random } from 'remotion';
-import { Circle, Rect } from '@remotion/shapes';
+import { Circle } from '@remotion/shapes';
 
 const Scene2: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  const productName = "The Royal Collection";
-  const features = ["18K Gold Craftsmanship","Rare Diamond Selection","Artisan Design","Limited Edition"] || ['Premium Quality', 'Fast Performance', 'User Friendly'];
+  const features = [{"title":"Trendy Gradient Presets","description":"Amazing trendy gradient presets capability","emoji":"🚀","icon":"circle","color":"#FF6B6B"},{"title":"Engaging Social Effects","description":"Amazing engaging social effects capability","emoji":"⭐","icon":"rect","color":"#4ECDC4"},{"title":"Custom Animation Library","description":"Amazing custom animation library capability","emoji":"⚡","icon":"circle","color":"#FFE66D"},{"title":"One-Click Templates","description":"Amazing one-click templates capability","emoji":"🎯","icon":"rect","color":"#FF8B94"}] || [
+    { title: 'Feature 1', description: 'Amazing capability', color: '#FF6B6B' },
+    { title: 'Feature 2', description: 'Powerful tool', color: '#4ECDC4' },
+    { title: 'Feature 3', description: 'Easy to use', color: '#FFE66D' }
+  ];
 
-  // 3D rotation effect
-  const rotationY = interpolate(frame, [0, 180], [0, 360]);
-  const rotationX = Math.sin(frame * 0.02) * 10;
-  
-  // Product glow effect
-  const glowPulse = interpolate((frame % 120), [0, 60, 120], [0.5, 1.2, 0.5]);
-  
-  // Feature highlights
-  const highlightFeature = Math.floor((frame / 60) % features.length);
+  // Card morphing animation
+  const cardMorph = (index: number) => {
+    const startFrame = index * 30;
+    const progress = spring({
+      fps,
+      frame: frame - startFrame,
+      config: { damping: 300, stiffness: 400 }
+    });
+    
+    const rotateY = interpolate(progress, [0, 1], [90, 0]);
+    const scale = interpolate(progress, [0, 0.5, 1], [0.5, 1.1, 1]);
+    const opacity = interpolate(frame - startFrame, [0, 20], [0, 1]);
+    
+    return { rotateY, scale, opacity };
+  };
+
+  // Particle system for each card
+  const generateParticles = (cardIndex: number) => {
+    return Array.from({ length: 20 }, (_, i) => {
+      const particleFrame = frame - cardIndex * 30 - 10;
+      const angle = (i / 20) * Math.PI * 2;
+      const radius = interpolate(particleFrame, [0, 60], [0, 100]);
+      
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      const opacity = interpolate(particleFrame, [0, 30, 60], [0, 0.6, 0]);
+      
+      return { x, y, opacity };
+    });
+  };
 
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at center, #2C3E50 0%, #4A6741 30%, #1A1A1A 100%)',
+      background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      gap: 60
     }}>
-      {/* 3D Product representation */}
-      <div style={{
-        position: 'relative',
-        transform: `perspective(1000px) rotateY(${rotationY}deg) rotateX(${rotationX}deg) scale(1.2)`,
-        width: 300,
-        height: 300
-      }}>
-        {/* Main product shape */}
-        <div style={{
-          width: '100%',
-          height: '100%',
-          background: `linear-gradient(145deg, 
-            rgba(255,255,255,0.1) 0%, 
-            rgba(100,200,255,0.3) 50%, 
-            rgba(255,255,255,0.1) 100%)
-          `,
-          borderRadius: '20px',
-          border: '2px solid rgba(255,255,255,0.3)',
-          boxShadow: `
-            0 0 ${30 * glowPulse}px rgba(100,200,255,0.5),
-            inset 0 0 50px rgba(255,255,255,0.1)
-          `,
-          backdropFilter: 'blur(10px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          {/* Product icon/logo */}
-          <div style={{
-            fontSize: 80,
-            color: '#64C8FF',
-            textShadow: `0 0 20px #64C8FF`,
-            transform: `rotateY(${-rotationY}deg)` // Counter-rotate to keep icon upright
-          }}>
-            📱
-          </div>
-        </div>
+      {features.map((feature, index) => {
+        const morph = cardMorph(index);
+        const particles = generateParticles(index);
+        const cardX = (index - 1) * 320;
         
-        {/* Floating particles around product */}
-        {Array.from({ length: 15 }, (_, i) => {
-          const angle = (i / 15) * Math.PI * 2;
-          const radius = 200 + Math.sin((frame + i * 10) * 0.05) * 30;
-          const x = Math.cos(angle + frame * 0.02) * radius;
-          const y = Math.sin(angle + frame * 0.02) * radius * 0.6;
-          
-          return (
-            <Circle
-              key={i}
-              x={x}
-              y={y}
-              width={4}
-              height={4}
-              color="#64C8FF"
-              opacity={0.6}
-            />
-          );
-        })}
-      </div>
-      
-      {/* Product name */}
-      <div style={{
-        position: 'absolute',
-        top: '15%',
-        width: '100%',
-        textAlign: 'center',
-        fontSize: 48,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        textShadow: '0 4px 20px rgba(0,0,0,0.5)',
-        opacity: interpolate(frame, [0, 30], [0, 1])
-      }}>
-        "The Royal Collection"
-      </div>
-      
-      {/* Features list */}
-      <div style={{
-        position: 'absolute',
-        bottom: '15%',
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        gap: 40
-      }}>
-        {features.map((feature, index) => (
-          <div
-            key={index}
-            style={{
-              opacity: interpolate(frame - index * 20, [0, 20], [0, 1]),
-              transform: `scale(${index === highlightFeature ? 1.1 : 1})`,
-              transition: 'transform 0.3s ease',
-              fontSize: 18,
-              color: index === highlightFeature ? '#64C8FF' : '#FFFFFF',
-              textShadow: index === highlightFeature ? '0 0 10px #64C8FF' : 'none',
-              fontWeight: index === highlightFeature ? 'bold' : 'normal'
-            }}
-          >
-            {feature}
+        return (
+          <div key={index} style={{
+            position: 'relative',
+            transform: `translateX(${cardX}px) perspective(1000px) rotateY(${morph.rotateY}deg) scale(${morph.scale})`,
+            opacity: morph.opacity,
+          }}>
+            {/* Particle effects */}
+            {particles.map((particle, i) => (
+              <Circle
+                key={i}
+                x={particle.x}
+                y={particle.y}
+                width={4}
+                height={4}
+                color={feature.color}
+                opacity={particle.opacity}
+              />
+            ))}
+            
+            {/* Card */}
+            <div style={{
+              width: 280,
+              height: 200,
+              background: `linear-gradient(145deg, ${feature.color}20, ${feature.color}40)`,
+              borderRadius: 20,
+              border: `2px solid ${feature.color}`,
+              padding: 30,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 15,
+              boxShadow: `0 20px 40px rgba(0,0,0,0.3), inset 0 0 20px ${feature.color}30`,
+              backdropFilter: 'blur(10px)'
+            }}>
+              <div style={{
+                fontSize: 24,
+                fontWeight: 'bold',
+                color: feature.color,
+                textAlign: 'center',
+                textShadow: `0 0 10px ${feature.color}`
+              }}>
+                {feature.title}
+              </div>
+              <div style={{
+                fontSize: 16,
+                color: 'rgba(255,255,255,0.8)',
+                textAlign: 'center',
+                lineHeight: 1.4
+              }}>
+                {feature.description || 'Amazing feature'}
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </AbsoluteFill>
   );
 };

@@ -1,9 +1,9 @@
 import React from 'react';
 import { AbsoluteFill, Audio, staticFile, Sequence } from 'remotion';
 import { TransitionSeries, linearTiming } from '@remotion/transitions';
-import { fade } from '@remotion/transitions/fade';
-import { wipe } from '@remotion/transitions/wipe';
 import { slide } from '@remotion/transitions/slide';
+import { wipe } from '@remotion/transitions/wipe';
+import { fade } from '@remotion/transitions/fade';
 import { Scene1 } from '../Scenes/Scene1';
 import { Scene2 } from '../Scenes/Scene2';
 import { Scene3 } from '../Scenes/Scene3';
@@ -24,7 +24,7 @@ export const GeneratedComp: React.FC = () => {
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           timing={linearTiming({durationInFrames: 20})}
-          presentation={fade()}
+          presentation={slide()}
         />
         <TransitionSeries.Sequence durationInFrames={210}>
           <Scene2 />
@@ -33,19 +33,19 @@ export const GeneratedComp: React.FC = () => {
           timing={linearTiming({durationInFrames: 15})}
           presentation={wipe()}
         />
-        <TransitionSeries.Sequence durationInFrames={180}>
+        <TransitionSeries.Sequence durationInFrames={150}>
           <Scene3 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           timing={linearTiming({durationInFrames: 15})}
-          presentation={slide()}
+          presentation={fade()}
         />
-        <TransitionSeries.Sequence durationInFrames={150}>
+        <TransitionSeries.Sequence durationInFrames={180}>
           <Scene4 />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           timing={linearTiming({durationInFrames: 20})}
-          presentation={fade()}
+          presentation={slide()}
         />
         <TransitionSeries.Sequence durationInFrames={180}>
           <Scene5 />

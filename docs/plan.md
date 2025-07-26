@@ -79,4 +79,82 @@ Fully functioning, dynamic, variable-length advertisement generation platform.
 - [ ] **Database integration** (store generated videos and templates)
 - [ ] **API rate limiting** (manage Claude API usage)
 
-**Target:** Production-ready advertisement generation platform capable of creating professional marketing videos for any industry or use case.
+## Current Architecture Summary
+
+### How Everything Works Together
+
+**1. User Input Processing**
+```
+User Prompt → Smart Template Selector → Content Analysis → Template Recommendations
+```
+
+**2. AI Agent Pipeline**
+```
+Template Director (Claude 3.5 Sonnet) → Video Structure Planning
+↓
+Template Generator → React Component Generation  
+↓
+Template Orchestrator → File System Management
+```
+
+**3. Remotion Video Engine**
+```
+Generated React Components → TransitionSeries → Remotion Rendering → MP4 Output
+```
+
+### Template System Flow
+
+1. **Template Library** (`/src/lib/templates/scene-templates.ts`)
+   - 10+ advanced templates with metadata (complexity, style, category)
+   - Each template contains React component code with placeholder props
+   - Categories: hero, features, cta, logo, product, stats, transition
+
+2. **Smart Selection** (`/src/lib/templates/smart-template-selector.ts`)
+   - Analyzes prompt for industry (tech, gaming, luxury, etc.)
+   - Maps content to visual styles (futuristic, modern, organic)
+   - Generates contextual props (titles, features, stats)
+   - Scores templates based on relevance
+
+3. **AI Planning** (`/src/lib/templates/template-director.ts`)
+   - Claude 3.5 Sonnet receives full template catalog
+   - Plans optimal video structure (scenes, transitions, timing)
+   - Generates rich, contextual prop values
+   - Creates 30-second video flow (900 frames)
+
+4. **Component Generation** (`/src/lib/templates/template-generator.ts`)
+   - Injects props into template code placeholders
+   - Validates required props and provides defaults
+   - Generates TypeScript scene files
+   - Creates master composition with TransitionSeries
+
+5. **File Output** (`/src/remotion/`)
+   ```
+   Generated/GeneratedComp.tsx    # Master composition
+   Scenes/Scene1.tsx              # Individual scenes
+   Scenes/Scene2.tsx              # ...dynamically created
+   ```
+
+6. **Remotion Rendering**
+   - Imports generated scenes into composition
+   - Applies transitions (fade, wipe, slide)
+   - Renders using advanced Remotion features:
+     - Spring animations for smooth motion
+     - 3D transforms and perspective effects
+     - Particle systems with physics
+     - Complex interpolations and easing
+     - SVG animations and morphing
+     - Neon effects and visual filters
+
+### Advanced Features in Use
+
+- **3D Floating Elements** - Perspective transforms with rotation
+- **Kinetic Typography** - Word-by-word animations with motion blur
+- **Morphing Cards** - 3D card flips with particle effects
+- **Neon Pulse Effects** - CSS shadows with dynamic glow intensity
+- **Wave Animations** - SVG path morphing with mathematical functions
+- **Dynamic Counters** - Interpolated number animations with progress rings
+- **Particle Flow** - Physics-based particle movement and opacity
+
+**Result:** Professional marketing videos with advanced visual effects that adapt intelligently to content type and user intent.
+
+**Target:** Enterprise-grade video generation platform for scalable, professional marketing content.

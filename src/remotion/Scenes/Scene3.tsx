@@ -1,113 +1,125 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, random } from 'remotion';
-import { Circle } from '@remotion/shapes';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } from 'remotion';
 
 const Scene3: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
-  const features = [{"title":"Handcrafted Excellence","description":"Each piece meticulously crafted by master artisans"},{"title":"Premium Materials","description":"Sourced from the world's finest suppliers"},{"title":"Lifetime Guarantee","description":"Quality that lasts generations"}] || [
-    { title: 'Feature 1', description: 'Amazing capability', color: '#FF6B6B' },
-    { title: 'Feature 2', description: 'Powerful tool', color: '#4ECDC4' },
-    { title: 'Feature 3', description: 'Easy to use', color: '#FFE66D' }
+  const stats = [{"label":"Ready-to-use Templates","value":"100+"},{"label":"Gradient Combinations","value":"50+"},{"label":"Social Effects","value":"30+"}] || [
+    { label: 'Users', value: 50000, suffix: '+', color: '#FF6B6B' },
+    { label: 'Downloads', value: 100000, suffix: '+', color: '#4ECDC4' },
+    { label: 'Rating', value: 4.9, suffix: '/5', color: '#FFE66D' }
   ];
 
-  // Card morphing animation
-  const cardMorph = (index: number) => {
-    const startFrame = index * 30;
-    const progress = spring({
-      fps,
-      frame: frame - startFrame,
-      config: { damping: 300, stiffness: 400 }
-    });
-    
-    const rotateY = interpolate(progress, [0, 1], [90, 0]);
-    const scale = interpolate(progress, [0, 0.5, 1], [0.5, 1.1, 1]);
-    const opacity = interpolate(frame - startFrame, [0, 20], [0, 1]);
-    
-    return { rotateY, scale, opacity };
-  };
-
-  // Particle system for each card
-  const generateParticles = (cardIndex: number) => {
-    return Array.from({ length: 20 }, (_, i) => {
-      const particleFrame = frame - cardIndex * 30 - 10;
-      const angle = (i / 20) * Math.PI * 2;
-      const radius = interpolate(particleFrame, [0, 60], [0, 100]);
-      
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      const opacity = interpolate(particleFrame, [0, 30, 60], [0, 0.6, 0]);
-      
-      return { x, y, opacity };
-    });
-  };
+  const containerScale = spring({
+    fps,
+    frame,
+    config: { damping: 200, stiffness: 200 }
+  });
 
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
+      background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 60
+      gap: 80
     }}>
-      {features.map((feature, index) => {
-        const morph = cardMorph(index);
-        const particles = generateParticles(index);
-        const cardX = (index - 1) * 320;
+      {stats.map((stat, index) => {
+        const startFrame = index * 30;
+        const progress = interpolate(
+          frame - startFrame,
+          [0, 90],
+          [0, 1],
+          { extrapolateRight: 'clamp' }
+        );
         
+        const countValue = interpolate(
+          progress,
+          [0, 1],
+          [0, stat.value],
+          { extrapolateRight: 'clamp' }
+        );
+        
+        const scaleEffect = spring({
+          fps,
+          frame: frame - startFrame,
+          config: { damping: 200, stiffness: 300 }
+        });
+        
+        const displayValue = stat.value < 10 
+          ? countValue.toFixed(1)
+          : Math.floor(countValue).toLocaleString();
+
         return (
-          <div key={index} style={{
-            position: 'relative',
-            transform: `translateX(${cardX}px) perspective(1000px) rotateY(${morph.rotateY}deg) scale(${morph.scale})`,
-            opacity: morph.opacity,
-          }}>
-            {/* Particle effects */}
-            {particles.map((particle, i) => (
-              <Circle
-                key={i}
-                x={particle.x}
-                y={particle.y}
-                width={4}
-                height={4}
-                color={feature.color}
-                opacity={particle.opacity}
-              />
-            ))}
-            
-            {/* Card */}
-            <div style={{
-              width: 280,
-              height: 200,
-              background: `linear-gradient(145deg, ${feature.color}20, ${feature.color}40)`,
-              borderRadius: 20,
-              border: `2px solid ${feature.color}`,
-              padding: 30,
+          <div
+            key={index}
+            style={{
+              transform: `scale(${scaleEffect})`,
+              opacity: interpolate(frame - startFrame, [0, 20], [0, 1]),
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'center',
               alignItems: 'center',
-              gap: 15,
-              boxShadow: `0 20px 40px rgba(0,0,0,0.3), inset 0 0 20px ${feature.color}30`,
-              backdropFilter: 'blur(10px)'
+              gap: 20
+            }}
+          >
+            {/* Progress ring */}
+            <div style={{
+              position: 'relative',
+              width: 120,
+              height: 120
             }}>
+              <svg width={120} height={120} style={{ transform: 'rotate(-90deg)' }}>
+                <circle
+                  cx={60}
+                  cy={60}
+                  r={50}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.2)"
+                  strokeWidth={8}
+                />
+                <circle
+                  cx={60}
+                  cy={60}
+                  r={50}
+                  fill="none"
+                  stroke={stat.color}
+                  strokeWidth={8}
+                  strokeDasharray={`${314 * progress} 314`}
+                  strokeLinecap="round"
+                  style={{
+                    filter: `drop-shadow(0 0 10px ${stat.color})`
+                  }}
+                />
+              </svg>
+              
+              {/* Counter display */}
               <div style={{
-                fontSize: 24,
-                fontWeight: 'bold',
-                color: feature.color,
-                textAlign: 'center',
-                textShadow: `0 0 10px ${feature.color}`
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                textAlign: 'center'
               }}>
-                {feature.title}
+                <div style={{
+                  fontSize: 24,
+                  fontWeight: 'bold',
+                  color: stat.color,
+                  textShadow: `0 0 10px ${stat.color}`
+                }}>
+                  {displayValue}{stat.suffix}
+                </div>
               </div>
-              <div style={{
-                fontSize: 16,
-                color: 'rgba(255,255,255,0.8)',
-                textAlign: 'center',
-                lineHeight: 1.4
-              }}>
-                {feature.description || 'Amazing feature'}
-              </div>
+            </div>
+            
+            {/* Label */}
+            <div style={{
+              fontSize: 22,
+              color: 'white',
+              fontWeight: 'bold',
+              textAlign: 'center'
+            }}>
+              {stat.label}
             </div>
           </div>
         );

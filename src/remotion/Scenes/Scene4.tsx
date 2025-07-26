@@ -1,129 +1,131 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill } from 'remotion';
+import { useCurrentFrame, useVideoConfig, interpolate, spring, AbsoluteFill, random } from 'remotion';
+import { Circle, Rect } from '@remotion/shapes';
 
 const Scene4: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
 
-  const stats = [{"label":"Years of Heritage","value":75},{"label":"Artisan Craftsmen","value":50},{"label":"Countries","value":30}] || [
-    { label: 'Users', value: 50000, suffix: '+', color: '#FF6B6B' },
-    { label: 'Downloads', value: 100000, suffix: '+', color: '#4ECDC4' },
-    { label: 'Rating', value: 4.9, suffix: '/5', color: '#FFE66D' }
-  ];
+  const productName = "Instagram Story Creator";
+  const features = ["Drag & Drop Interface","Real-time Preview","Export in Seconds"] || ['Premium Quality', 'Fast Performance', 'User Friendly'];
 
-  const containerScale = spring({
-    fps,
-    frame,
-    config: { damping: 200, stiffness: 200 }
-  });
+  // 3D rotation effect
+  const rotationY = interpolate(frame, [0, 180], [0, 360]);
+  const rotationX = Math.sin(frame * 0.02) * 10;
+  
+  // Product glow effect
+  const glowPulse = interpolate((frame % 120), [0, 60, 120], [0.5, 1.2, 0.5]);
+  
+  // Feature highlights
+  const highlightFeature = Math.floor((frame / 60) % features.length);
 
   return (
     <AbsoluteFill style={{
-      background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+      background: 'radial-gradient(ellipse at center, #2C3E50 0%, #4A6741 30%, #1A1A1A 100%)',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      gap: 80
+      justifyContent: 'center'
     }}>
-      {stats.map((stat, index) => {
-        const startFrame = index * 30;
-        const progress = interpolate(
-          frame - startFrame,
-          [0, 90],
-          [0, 1],
-          { extrapolateRight: 'clamp' }
-        );
+      {/* 3D Product representation */}
+      <div style={{
+        position: 'relative',
+        transform: `perspective(1000px) rotateY(${rotationY}deg) rotateX(${rotationX}deg) scale(1.2)`,
+        width: 300,
+        height: 300
+      }}>
+        {/* Main product shape */}
+        <div style={{
+          width: '100%',
+          height: '100%',
+          background: `linear-gradient(145deg, 
+            rgba(255,255,255,0.1) 0%, 
+            rgba(100,200,255,0.3) 50%, 
+            rgba(255,255,255,0.1) 100%)
+          `,
+          borderRadius: '20px',
+          border: '2px solid rgba(255,255,255,0.3)',
+          boxShadow: `
+            0 0 ${30 * glowPulse}px rgba(100,200,255,0.5),
+            inset 0 0 50px rgba(255,255,255,0.1)
+          `,
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          {/* Product icon/logo */}
+          <div style={{
+            fontSize: 80,
+            color: '#64C8FF',
+            textShadow: `0 0 20px #64C8FF`,
+            transform: `rotateY(${-rotationY}deg)` // Counter-rotate to keep icon upright
+          }}>
+            📱
+          </div>
+        </div>
         
-        const countValue = interpolate(
-          progress,
-          [0, 1],
-          [0, stat.value],
-          { extrapolateRight: 'clamp' }
-        );
-        
-        const scaleEffect = spring({
-          fps,
-          frame: frame - startFrame,
-          config: { damping: 200, stiffness: 300 }
-        });
-        
-        const displayValue = stat.value < 10 
-          ? countValue.toFixed(1)
-          : Math.floor(countValue).toLocaleString();
-
-        return (
+        {/* Floating particles around product */}
+        {Array.from({ length: 15 }, (_, i) => {
+          const angle = (i / 15) * Math.PI * 2;
+          const radius = 200 + Math.sin((frame + i * 10) * 0.05) * 30;
+          const x = Math.cos(angle + frame * 0.02) * radius;
+          const y = Math.sin(angle + frame * 0.02) * radius * 0.6;
+          
+          return (
+            <Circle
+              key={i}
+              x={x}
+              y={y}
+              width={4}
+              height={4}
+              color="#64C8FF"
+              opacity={0.6}
+            />
+          );
+        })}
+      </div>
+      
+      {/* Product name */}
+      <div style={{
+        position: 'absolute',
+        top: '15%',
+        width: '100%',
+        textAlign: 'center',
+        fontSize: 48,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        textShadow: '0 4px 20px rgba(0,0,0,0.5)',
+        opacity: interpolate(frame, [0, 30], [0, 1])
+      }}>
+        "Instagram Story Creator"
+      </div>
+      
+      {/* Features list */}
+      <div style={{
+        position: 'absolute',
+        bottom: '15%',
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        gap: 40
+      }}>
+        {features.map((feature, index) => (
           <div
             key={index}
             style={{
-              transform: `scale(${scaleEffect})`,
-              opacity: interpolate(frame - startFrame, [0, 20], [0, 1]),
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 20
+              opacity: interpolate(frame - index * 20, [0, 20], [0, 1]),
+              transform: `scale(${index === highlightFeature ? 1.1 : 1})`,
+              transition: 'transform 0.3s ease',
+              fontSize: 18,
+              color: index === highlightFeature ? '#64C8FF' : '#FFFFFF',
+              textShadow: index === highlightFeature ? '0 0 10px #64C8FF' : 'none',
+              fontWeight: index === highlightFeature ? 'bold' : 'normal'
             }}
           >
-            {/* Progress ring */}
-            <div style={{
-              position: 'relative',
-              width: 120,
-              height: 120
-            }}>
-              <svg width={120} height={120} style={{ transform: 'rotate(-90deg)' }}>
-                <circle
-                  cx={60}
-                  cy={60}
-                  r={50}
-                  fill="none"
-                  stroke="rgba(255,255,255,0.2)"
-                  strokeWidth={8}
-                />
-                <circle
-                  cx={60}
-                  cy={60}
-                  r={50}
-                  fill="none"
-                  stroke={stat.color}
-                  strokeWidth={8}
-                  strokeDasharray={`${314 * progress} 314`}
-                  strokeLinecap="round"
-                  style={{
-                    filter: `drop-shadow(0 0 10px ${stat.color})`
-                  }}
-                />
-              </svg>
-              
-              {/* Counter display */}
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center'
-              }}>
-                <div style={{
-                  fontSize: 24,
-                  fontWeight: 'bold',
-                  color: stat.color,
-                  textShadow: `0 0 10px ${stat.color}`
-                }}>
-                  {displayValue}{stat.suffix}
-                </div>
-              </div>
-            </div>
-            
-            {/* Label */}
-            <div style={{
-              fontSize: 22,
-              color: 'white',
-              fontWeight: 'bold',
-              textAlign: 'center'
-            }}>
-              {stat.label}
-            </div>
+            {feature}
           </div>
-        );
-      })}
+        ))}
+      </div>
     </AbsoluteFill>
   );
 };
